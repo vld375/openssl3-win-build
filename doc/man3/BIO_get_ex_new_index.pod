@@ -43,9 +43,9 @@ X509_get_ex_new_index, X509_set_ex_data, X509_get_ex_data
  #define TYPE_set_app_data(TYPE *d, void *arg)
  #define TYPE_get_app_data(TYPE *d)
 
-Deprecated since OpenSSL 3.0, can be hidden entirely by defining
-B<OPENSSL_API_COMPAT> with a suitable version value, see
-L<openssl_user_macros(7)>:
+The following functions have been deprecated since OpenSSL 3.0, and can be
+hidden entirely by defining B<OPENSSL_API_COMPAT> with a suitable version value,
+see L<openssl_user_macros(7)>:
 
  int DH_get_ex_new_index(long argl, void *argp, CRYPTO_EX_new *new_func,
                          CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
@@ -89,10 +89,10 @@ TYPE_get_ex_new_index() is a macro that calls CRYPTO_get_ex_new_index()
 with the correct B<index> value.
 
 TYPE_set_ex_data() is a function that calls CRYPTO_set_ex_data() with
-an offset into the opaque exdata part of the TYPE object.
+an offset into the opaque exdata part of the TYPE object. I<d> B<MUST NOT> be NULL.
 
 TYPE_get_ex_data() is a function that calls CRYPTO_get_ex_data() with
-an offset into the opaque exdata part of the TYPE object.
+an offset into the opaque exdata part of the TYPE object. I<d> B<MUST NOT> be NULL.
 
 For compatibility with previous releases, the exdata index of zero is
 reserved for "application data." There are two convenience functions for

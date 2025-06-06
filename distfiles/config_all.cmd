@@ -1,7 +1,7 @@
 setlocal
 
-set OPENSSL_VER=3.0.0
-set OPENSSL_VER_SED=3\.0\.0
+set OPENSSL_VER=3.5.0
+set OPENSSL_VER_SED=3\.5\.0
 set OPENSSL_BASE=openssl-%OPENSSL_VER%
 set OPENSSL_BASE_SED=openssl-%OPENSSL_VER_SED%
 set OPENSSL_DIR=..\%OPENSSL_BASE%
@@ -17,6 +17,7 @@ set _GEN_LIST_INCL=^
   include\openssl\bio.h ^
   include\openssl\cmp.h ^
   include\openssl\cms.h ^
+  include\openssl\comp.h ^
   include\openssl\conf.h ^
   include\openssl\configuration.h ^
   include\openssl\crmf.h ^
@@ -35,15 +36,25 @@ set _GEN_LIST_INCL=^
   include\openssl\ssl.h ^
   include\openssl\ui.h ^
   include\openssl\x509.h ^
+  include\openssl\x509_acert.h ^
   include\openssl\x509_vfy.h ^
   include\openssl\x509v3.h
+
+set _GEN_LIST_PARAMNAMES_INCL=^
+  include\internal\param_names.h ^
+  include\openssl\core_names.h
+
+set _GEN_LIST_PARAMNAMES_CSRC=^
+  crypto\params_idx.c
 
 set _GEN_LIST_PROV_INCL=^
   providers\common\include\prov\der_digests.h ^
   providers\common\include\prov\der_dsa.h ^
   providers\common\include\prov\der_ec.h ^
   providers\common\include\prov\der_ecx.h ^
+  providers\common\include\prov\der_ml_dsa.h ^
   providers\common\include\prov\der_rsa.h ^
+  providers\common\include\prov\der_slh_dsa.h ^
   providers\common\include\prov\der_sm2.h ^
   providers\common\include\prov\der_wrap.h
 
@@ -52,12 +63,16 @@ set _GEN_LIST_PROV_CSRC=^
   providers\common\der\der_dsa_gen.c ^
   providers\common\der\der_ec_gen.c ^
   providers\common\der\der_ecx_gen.c ^
+  providers\common\der\der_ml_dsa_gen.c ^
   providers\common\der\der_rsa_gen.c ^
+  providers\common\der\der_slh_dsa_gen.c ^
   providers\common\der\der_sm2_gen.c ^
   providers\common\der\der_wrap_gen.c
 
 set _GEN_LIST=^
   %_GEN_LIST_INCL% ^
+  %_GEN_LIST_PARAMNAMES_INCL% ^
+  %_GEN_LIST_PARAMNAMES_CSRC% ^
   %_GEN_LIST_PROV_INCL% ^
   %_GEN_LIST_PROV_CSRC% ^
   apps\progs.c apps\progs.h ^
@@ -126,6 +141,9 @@ goto :end
 for %%f in ( %_GEN_LIST_INCL% ) do (
   perl -I. -Mconfigdata %OPENSSL_DIR%\util\dofile.pl -omakefile %OPENSSL_DIR%\%%f.in > %%f
 )
+for %%f in ( %_GEN_LIST_PARAMNAMES_INCL% %_GEN_LIST_PARAMNAMES_CSRC% ) do (
+  perl -I. -I%OPENSSL_DIR%\util\perl -Mconfigdata "-MOpenSSL::paramnames" %OPENSSL_DIR%\util\dofile.pl -omakefile %OPENSSL_DIR%\%%f.in > %%f
+)
 for %%f in ( %_GEN_LIST_PROV_INCL% %_GEN_LIST_PROV_CSRC% ) do (
   perl -I. -I%OPENSSL_DIR%\providers\common\der -Mconfigdata -Moids_to_c %OPENSSL_DIR%\util\dofile.pl -omakefile %OPENSSL_DIR%\%%f.in > %%f
 )
@@ -137,7 +155,7 @@ perl -I. -Mconfigdata %OPENSSL_DIR%\util\dofile.pl -omakefile %OPENSSL_DIR%\tool
 perl -I. -Mconfigdata %OPENSSL_DIR%\util\dofile.pl -omakefile %OPENSSL_DIR%\util\wrap.pl.in > util\wrap.pl
 ren configdata.pm configdata.pm.org
 @rem Redirection must be at front for "^^" to work. Strange.
->configdata.pm sed -e "s/%OPENSSL_DIR_SED%/\./g" -e "s/\(['\"]\)[A-Za-z]:[^^'\"]*\/%OPENSSL_BASE_SED%\(['\"\/]\)/\1\.\2/" configdata.pm.org
+>configdata.pm sed -e "s/%OPENSSL_DIR_SED%/\./g" -e "s/\(['\"]\)[A-Za-z]:[^^'\"]*\/%OPENSSL_BASE_SED%\(['\"\/]\)/\1\.\2/" -e "s/\"RANLIB\" =^> \"CODE(0x[0-9a-f]\+)\"/\"RANLIB\" =^> \"CODE(0xf1e2d3c4)\"/" -e "s/\(\"multilib\"\)/#\1/" configdata.pm.org
 dos2unix %_GEN_LIST%
 exit /b
 

@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2015-2021 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2015-2022 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -42,6 +42,11 @@ $ENV{OPENSSL_CONF_INCLUDE} = rel2abs(catdir($bldtop, "test"));
 $ENV{OPENSSL_MODULES} = rel2abs(catdir($shlibdir));
 $ENV{OPENSSL_ENGINES} = rel2abs(catdir($bldtop, "engines"));
 $ENV{CTLOG_FILE} = rel2abs(catfile($srctop, "test", "ct", "log_list.cnf"));
+
+# On platforms that support this, this will ensure malloc returns data that is
+# set to a non-zero value. Can be helpful for detecting uninitialized reads in
+# some situations.
+$ENV{'MALLOC_PERTURB_'} = '128' if !defined $ENV{'MALLOC_PERTURB_'};
 
 my %tapargs =
     ( verbosity         => $ENV{HARNESS_VERBOSE} ? 1 : 0,
@@ -174,6 +179,7 @@ $eres = eval {
         my $failure_verbosity = $openssl_args{failure_verbosity};
         my @plans = (); # initial level, no plan yet
         my $output_buffer = "";
+        my $in_indirect = 0;
 
         # We rely heavily on perl closures to make failure verbosity work
         # We need to do so, because there's no way to safely pass extra
@@ -210,7 +216,28 @@ $eres = eval {
                         $output_buffer = ""; # ignore comments etc. until plan
                     } elsif ($is_test) { # result of a test
                         pop @plans if @plans && --($plans[-1]) <= 0;
-                        print $output_buffer if !$is_ok;
+                        if ($output_buffer =~ /.*Indirect leak of.*/ == 1) {
+                            my @asan_array = split("\n", $output_buffer);
+                            foreach (@asan_array) {
+                                if ($_ =~ /.*Indirect leak of.*/ == 1) {
+                                    if ($in_indirect != 1) {
+                                        print "::group::Indirect Leaks\n";
+                                    }
+                                    $in_indirect = 1;
+                                }
+                                print "$_\n";
+                                if ($_ =~ /.*Indirect leak of.*/ != 1) {
+                                    if ($_ =~ /^    #.*/ == 0) {
+                                        if ($in_indirect != 0) {
+                                            print "\n::endgroup::\n";
+                                        }
+                                        $in_indirect = 0;
+                                    }
+                                }
+                            }
+                        } else {
+                            print $output_buffer if !$is_ok;
+                        }
                         print "\n".$self->as_string
                             if !$is_ok || $failure_verbosity == 2;
                         print "\n# ------------------------------------------------------------------------------" if !$is_ok;
@@ -313,10 +340,12 @@ my $harness = $package->new(\%tapargs);
 my $ret =
     $harness->runtests(map { [ abs2rel($_, rel2abs(curdir())), basename($_) ] }
                        @preps);
-die if $ret->has_errors;
-$ret =
-    $harness->runtests(map { [ abs2rel($_, rel2abs(curdir())), basename($_) ] }
-                       sort { reorder($a) cmp reorder($b) } keys %tests);
+
+if (ref($ret) ne "TAP::Parser::Aggregator" || !$ret->has_errors) {
+    $ret =
+        $harness->runtests(map { [ abs2rel($_, rel2abs(curdir())), basename($_) ] }
+                           sort { reorder($a) cmp reorder($b) } keys %tests);
+}
 
 # If this is a TAP::Parser::Aggregator, $ret->has_errors is the count of
 # tests that failed.  We don't bother with that exact number, just exit

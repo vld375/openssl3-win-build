@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2023 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -76,7 +76,7 @@ const BIO_METHOD *BIO_s_mem(void)
 
 const BIO_METHOD *BIO_s_secmem(void)
 {
-    return(&secmem_method);
+    return &secmem_method;
 }
 
 BIO *BIO_new_mem_buf(const void *buf, int len)
@@ -254,7 +254,7 @@ static long mem_ctrl(BIO *b, int cmd, long num, void *ptr)
         bm = bbm->readp;
         bo = bbm->buf;
     }
-    off = bm->data - bo->data;
+    off = (bm->data == bo->data) ? 0 : bm->data - bo->data;
     remain = bm->length;
 
     switch (cmd) {
@@ -277,7 +277,7 @@ static long mem_ctrl(BIO *b, int cmd, long num, void *ptr)
         if (num < 0 || num > off + remain)
             return -1;   /* Can't see outside of the current buffer */
 
-        bm->data = bo->data + num;
+        bm->data = (num != 0) ? bo->data + num : bo->data;
         bm->length = bo->length - num;
         bm->max = bo->max - num;
         off = num;

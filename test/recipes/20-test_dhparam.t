@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2020-2021 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2020-2025 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -10,7 +10,9 @@
 use strict;
 use warnings;
 
-use OpenSSL::Test qw(:DEFAULT data_file);
+use File::Copy;
+use File::Compare qw/compare_text/;
+use OpenSSL::Test qw(:DEFAULT data_file srctop_file);
 use OpenSSL::Test::Utils;
 
 #Tests for the dhparam CLI application
@@ -19,7 +21,9 @@ setup("test_dhparam");
 
 plan skip_all => "DH is not supported in this build"
     if disabled("dh");
-plan tests => 17;
+plan tests => 23;
+
+my $fipsconf = srctop_file("test", "fips-and-base.cnf");
 
 sub checkdhparams {
     my $file = shift; #Filename containing params
@@ -27,6 +31,7 @@ sub checkdhparams {
     my $gen = shift; #2, 5 or something else (0 is "something else")?
     my $format = shift; #DER or PEM?
     my $bits = shift; #Number of bits in p
+    my $keybits = shift; #Recommended private key bits
     my $pemtype;
     my $readtype;
     my $readbits = 0;
@@ -82,6 +87,13 @@ sub checkdhparams {
 
     ok((grep { (index($_, $genline) + length ($genline)) == length ($_)} @textdata),
        "Checking generator is correct");
+
+    if ($keybits) {
+        my $keybits_line = "recommended-private-length: $keybits bits";
+        ok((grep { (index($_, $keybits_line) + length($keybits_line))
+                   == length($_) } @textdata),
+           "Checking recommended private key bits is correct");
+    }
 }
 
 #Test some "known good" parameter files to check that we can read them
@@ -120,28 +132,28 @@ subtest "Read: 1024 bit X9.42 params, DER file" => sub {
 #Test that generating parameters of different types creates what we expect. We
 #use 512 for the size for speed reasons. Don't use this in real applications!
 subtest "Generate: 512 bit PKCS3 params, generator 2, PEM file" => sub {
-    plan tests => 5;
+    plan tests => 6;
     ok(run(app([ 'openssl', 'dhparam', '-out', 'gen-pkcs3-2-512.pem',
                  '512' ])));
-    checkdhparams("gen-pkcs3-2-512.pem", "PKCS3", 2, "PEM", 512);
+    checkdhparams("gen-pkcs3-2-512.pem", "PKCS3", 2, "PEM", 512, 125);
 };
 subtest "Generate: 512 bit PKCS3 params, explicit generator 2, PEM file" => sub {
-    plan tests => 5;
+    plan tests => 6;
     ok(run(app([ 'openssl', 'dhparam', '-out', 'gen-pkcs3-exp2-512.pem', '-2',
                  '512' ])));
-    checkdhparams("gen-pkcs3-exp2-512.pem", "PKCS3", 2, "PEM", 512);
+    checkdhparams("gen-pkcs3-exp2-512.pem", "PKCS3", 2, "PEM", 512, 125);
 };
 subtest "Generate: 512 bit PKCS3 params, generator 5, PEM file" => sub {
-    plan tests => 5;
+    plan tests => 6;
     ok(run(app([ 'openssl', 'dhparam', '-out', 'gen-pkcs3-5-512.pem', '-5',
                  '512' ])));
-    checkdhparams("gen-pkcs3-5-512.pem", "PKCS3", 5, "PEM", 512);
+    checkdhparams("gen-pkcs3-5-512.pem", "PKCS3", 5, "PEM", 512, 125);
 };
 subtest "Generate: 512 bit PKCS3 params, generator 2, explicit PEM file" => sub {
-    plan tests => 5;
+    plan tests => 6;
     ok(run(app([ 'openssl', 'dhparam', '-out', 'gen-pkcs3-2-512.exp.pem',
                  '-outform', 'PEM', '512' ])));
-    checkdhparams("gen-pkcs3-2-512.exp.pem", "PKCS3", 2, "PEM", 512);
+    checkdhparams("gen-pkcs3-2-512.exp.pem", "PKCS3", 2, "PEM", 512, 125);
 };
 SKIP: {
     skip "Skipping tests that require DSA", 4 if disabled("dsa");
@@ -171,7 +183,42 @@ SKIP: {
         checkdhparams("gen-x942-0-512.der", "X9.42", 0, "DER", 512);
     };
 }
+SKIP: {
+    skip "Skipping tests that are only supported in a fips build with security ".
+        "checks", 4 if (disabled("fips") || disabled("fips-securitychecks"));
 
+    $ENV{OPENSSL_CONF} = $fipsconf;
+
+    ok(!run(app(['openssl', 'dhparam', '-check', '512'])),
+        "Generating 512 bit DH params should fail in FIPS mode");
+
+    ok(run(app(['openssl', 'dhparam', '-provider', 'default', '-propquery',
+            '?fips!=yes', '-check', '512'])),
+        "Generating 512 bit DH params should succeed in FIPS mode using".
+        " non-FIPS property query");
+
+    SKIP: {
+        skip "Skipping tests that require DSA", 2 if disabled("dsa");
+
+        ok(!run(app(['openssl', 'dhparam', '-dsaparam', '-check', '512'])),
+            "Generating 512 bit DSA-style DH params should fail in FIPS mode");
+
+        ok(run(app(['openssl', 'dhparam', '-provider', 'default', '-propquery',
+                '?fips!=yes', '-dsaparam', '-check', '512'])),
+            "Generating 512 bit DSA-style DH params should succeed in FIPS".
+            " mode using non-FIPS property query");
+    }
+
+    delete $ENV{OPENSSL_CONF};
+}
+
+my $input = data_file("pkcs3-2-1024.pem");
 ok(run(app(["openssl", "dhparam", "-noout", "-text"],
-           stdin => data_file("pkcs3-2-1024.pem"))),
+           stdin => $input)),
    "stdinbuffer input test that uses BIO_gets");
+
+my $inout = "inout.pem";
+copy($input, $inout);
+ok(run(app(['openssl', 'dhparam', '-in', $inout, '-out', $inout])),
+    "identical infile and outfile");
+ok(!compare_text($input, $inout), "converted file $inout did not change");

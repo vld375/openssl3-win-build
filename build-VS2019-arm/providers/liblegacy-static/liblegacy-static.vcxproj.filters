@@ -46,6 +46,9 @@
     <Filter Include="Source Files\crypto\des">
       <UniqueIdentifier>{a77f2204-6446-420b-8ed8-8a84064374eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\crypto\rc4">
+      <UniqueIdentifier>{8240364c-069a-4666-9f4a-c56d49a23f6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\providers\implementations\digests\ripemd_prov.c">
@@ -117,9 +120,6 @@
     <ClCompile Include="..\..\..\providers\implementations\ciphers\cipher_tdes_common.c">
       <Filter>Source Files\providers\implementations\ciphers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\crypto\ctype.c">
-      <Filter>Source Files\crypto</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\crypto\md5\md5_dgst.c">
       <Filter>Source Files\crypto\md5</Filter>
     </ClCompile>
@@ -128,9 +128,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\crypto\md5\md5_sha1.c">
       <Filter>Source Files\crypto\md5</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\crypto\cpuid.c">
-      <Filter>Source Files\crypto</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\providers\prov_running.c">
       <Filter>Source Files\providers</Filter>
@@ -141,17 +138,23 @@
     <ClCompile Include="..\..\..\providers\implementations\kdfs\pbkdf1.c">
       <Filter>Source Files\providers\implementations\kdfs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\providers\implementations\kdfs\pvkkdf.c">
+      <Filter>Source Files\providers\implementations\kdfs</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\crypto\mem_clr.c">
       <Filter>Source Files\crypto</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\crypto\bn\bn_asm.c">
-      <Filter>Source Files\crypto\bn</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\crypto\des\des_enc.c">
       <Filter>Source Files\crypto\des</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\crypto\des\fcrypt_b.c">
       <Filter>Source Files\crypto\des</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\crypto\rc4\rc4_enc.c">
+      <Filter>Source Files\crypto\rc4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\crypto\rc4\rc4_skey.c">
+      <Filter>Source Files\crypto\rc4</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

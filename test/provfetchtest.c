@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2021-2023 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -25,7 +25,7 @@ static int dummy_decoder_decode(void *ctx, OSSL_CORE_BIO *cin, int selection,
 
 static const OSSL_DISPATCH dummy_decoder_functions[] = {
     { OSSL_FUNC_DECODER_DECODE, (void (*)(void))dummy_decoder_decode },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
 
 static const OSSL_ALGORITHM dummy_decoders[] = {
@@ -43,7 +43,7 @@ static int dummy_encoder_encode(void *ctx, OSSL_CORE_BIO *out,
 
 static const OSSL_DISPATCH dummy_encoder_functions[] = {
     { OSSL_FUNC_DECODER_DECODE, (void (*)(void))dummy_encoder_encode },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
 
 static const OSSL_ALGORITHM dummy_encoders[] = {
@@ -78,7 +78,7 @@ static const OSSL_DISPATCH dummy_store_functions[] = {
     { OSSL_FUNC_STORE_LOAD, (void (*)(void))dummy_store_load },
     { OSSL_FUNC_STORE_EOF, (void (*)(void))dumm_store_eof },
     { OSSL_FUNC_STORE_CLOSE, (void (*)(void))dummy_store_close },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
 
 static const OSSL_ALGORITHM dummy_store[] = {
@@ -167,7 +167,7 @@ static const OSSL_DISPATCH dummy_rand_functions[] = {
     { OSSL_FUNC_RAND_ENABLE_LOCKING, (void(*)(void))dummy_rand_enable_locking },
     { OSSL_FUNC_RAND_LOCK, (void(*)(void))dummy_rand_lock },
     { OSSL_FUNC_RAND_UNLOCK, (void(*)(void))dummy_rand_unlock },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
 
 static const OSSL_ALGORITHM dummy_rand[] = {
@@ -195,7 +195,7 @@ static const OSSL_ALGORITHM *dummy_query(void *provctx, int operation_id,
 static const OSSL_DISPATCH dummy_dispatch_table[] = {
     { OSSL_FUNC_PROVIDER_QUERY_OPERATION, (void (*)(void))dummy_query },
     { OSSL_FUNC_PROVIDER_TEARDOWN, (void (*)(void))OSSL_LIB_CTX_free },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };
 
 static int dummy_provider_init(const OSSL_CORE_HANDLE *handle,
@@ -213,7 +213,7 @@ static int dummy_provider_init(const OSSL_CORE_HANDLE *handle,
      * Do some work using the child libctx, to make sure this is possible from
      * inside the init function.
      */
-    if (!RAND_bytes_ex(libctx, buf, sizeof(buf), 0))
+    if (RAND_bytes_ex(libctx, buf, sizeof(buf), 0) <= 0)
         return 0;
 
     return 1;
@@ -225,6 +225,7 @@ static int dummy_provider_init(const OSSL_CORE_HANDLE *handle,
  * Test 1: Encoder
  * Test 2: Store loader
  * Test 3: EVP_RAND
+ * Test 4-7: As above, but additionally with a query string
  */
 static int fetch_test(int tst)
 {
@@ -236,6 +237,7 @@ static int fetch_test(int tst)
     OSSL_STORE_LOADER *loader = NULL;
     int testresult = 0;
     unsigned char buf[32];
+    int query = tst > 3;
 
     if (!TEST_ptr(libctx))
         goto err;
@@ -246,24 +248,29 @@ static int fetch_test(int tst)
             || !TEST_ptr(dummyprov = OSSL_PROVIDER_load(libctx, "dummy-prov")))
         goto err;
 
-    switch(tst) {
+    switch (tst % 4) {
     case 0:
-        decoder = OSSL_DECODER_fetch(libctx, "DUMMY", NULL);
+        decoder = OSSL_DECODER_fetch(libctx, "DUMMY",
+                                     query ? "provider=dummy" : NULL);
         if (!TEST_ptr(decoder))
             goto err;
         break;
     case 1:
-        encoder = OSSL_ENCODER_fetch(libctx, "DUMMY", NULL);
+        encoder = OSSL_ENCODER_fetch(libctx, "DUMMY",
+                                     query ? "provider=dummy" : NULL);
         if (!TEST_ptr(encoder))
             goto err;
         break;
     case 2:
-        loader = OSSL_STORE_LOADER_fetch(libctx, "DUMMY", NULL);
+        loader = OSSL_STORE_LOADER_fetch(libctx, "DUMMY",
+                                         query ? "provider=dummy" : NULL);
         if (!TEST_ptr(loader))
             goto err;
         break;
     case 3:
-        if (!TEST_true(RAND_set_DRBG_type(libctx, "DUMMY", NULL, NULL, NULL))
+        if (!TEST_true(RAND_set_DRBG_type(libctx, "DUMMY",
+                                          query ? "provider=dummy" : NULL,
+                                          NULL, NULL))
                 || !TEST_int_ge(RAND_bytes_ex(libctx, buf, sizeof(buf), 0), 1))
             goto err;
         break;
@@ -284,7 +291,7 @@ static int fetch_test(int tst)
 
 int setup_tests(void)
 {
-    ADD_ALL_TESTS(fetch_test, 4);
+    ADD_ALL_TESTS(fetch_test, 8);
 
     return 1;
 }

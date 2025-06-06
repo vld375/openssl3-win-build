@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2017-2021 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2017-2023 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -24,8 +24,8 @@ use lib bldtop_dir('.');
 my $no_fips = disabled('fips') || ($ENV{NO_FIPS} // 0);
 
 plan tests =>
-    ($no_fips ? 0 : 3)          # Extra FIPS related tests
-    + 13;
+    ($no_fips ? 0 : 5)          # Extra FIPS related tests
+    + 16;
 
 # We want to know that an absurdly small number of bits isn't support
 is(run(app([ 'openssl', 'genpkey', '-out', 'genrsatest.pem',
@@ -103,6 +103,18 @@ ok(run(app([ 'openssl', 'genrsa', '-f4', '-out', 'genrsatest.pem', $good ])),
    "genrsa -f4 $good");
 ok(run(app([ 'openssl', 'rsa', '-check', '-in', 'genrsatest.pem', '-noout' ])),
    "rsa -check");
+ok(run(app([ 'openssl', 'rsa', '-in', 'genrsatest.pem', '-out', 'genrsatest-enc.pem',
+   '-aes256', '-passout', 'pass:x' ])),
+   "rsa encrypt");
+# Check the default salt length for PBKDF2 is 16 bytes
+# We expect the output to be of the form "0:d=0  hl=2 l=  16 prim: OCTET STRING      [HEX DUMP]:FAC7F37508E6B7A805BF4B13861B3687"
+# i.e. 2 byte header + 16 byte salt.
+ok(run(app(([ 'openssl', 'asn1parse',
+              '-in', 'genrsatest-enc.pem',
+              '-offset', '34', '-length', '18']))),
+   "Check the default size of the PBKDF2 PARAM 'salt length' is 16");
+ok(run(app([ 'openssl', 'rsa', '-in', 'genrsatest-enc.pem', '-passin', 'pass:x' ])),
+   "rsa decrypt");
 
 unless ($no_fips) {
     my $provconf = srctop_file("test", "fips-and-base.cnf");
@@ -124,6 +136,17 @@ unless ($no_fips) {
                 '-pkeyopt', 'bits:3072',
                 '-out', 'genrsatest3072.pem'])),
        "Generating RSA key with 3072 bits");
+
+   ok(!run(app(['openssl', 'genrsa', @prov, '512'])),
+       "Generating RSA key with 512 bits should fail in FIPS provider");
+
+   ok(!run(app(['openssl', 'genrsa',
+                @prov,
+                '-provider', 'default',
+                '-propquery', '?fips!=yes',
+                '512'])),
+       "Generating RSA key with 512 bits should succeed with FIPS provider as".
+       " default with a non-FIPS property query");
 
     # We want to know that an absurdly large number of bits fails the RNG check
     is(run(app([ 'openssl', 'genpkey',

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2012-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -14,10 +14,6 @@
 #include <openssl/x509v3.h>
 #include "internal/nelem.h"
 #include "testutil.h"
-
-#ifdef OPENSSL_SYS_WINDOWS
-# define strcasecmp _stricmp
-#endif
 
 static const char *const names[] = {
     "a", "b", ".", "*", "@",
@@ -161,7 +157,8 @@ static int set_altname(X509 *crt, ...)
         default:
             abort();
         }
-        sk_GENERAL_NAME_push(gens, gen);
+        if (!sk_GENERAL_NAME_push(gens, gen))
+            goto out;
         gen = NULL;
     }
     if (!X509_add1_ext_i2d(crt, NID_subject_alt_name, gens, 0, 0))
@@ -287,11 +284,13 @@ static int run_cert(X509 *crt, const char *nameincert,
     int failed = 0;
 
     for (; *pname != NULL; ++pname) {
-        int samename = strcasecmp(nameincert, *pname) == 0;
+        int samename = OPENSSL_strcasecmp(nameincert, *pname) == 0;
         size_t namelen = strlen(*pname);
         char *name = OPENSSL_malloc(namelen + 1);
         int match, ret;
 
+        if (!TEST_ptr(name))
+            return 0;
         memcpy(name, *pname, namelen + 1);
 
         match = -1;
@@ -646,6 +645,14 @@ static struct gennamedata {
             0xb7, 0x09, 0x02, 0x02
         },
         15
+    }, {
+        /*
+         * Regression test for CVE-2023-0286.
+         */
+        {
+            0xa3, 0x00
+        },
+        2
     }
 };
 

@@ -18,22 +18,32 @@ my $std_engines = catdir($there, 'engines');
 my $std_providers = catdir($there, 'providers');
 my $std_openssl_conf = catdir($there, 'apps/openssl.cnf');
 my $unix_shlib_wrap = catfile($there, 'util/shlib_wrap.sh');
+my $std_openssl_conf_include;
 
 if ($ARGV[0] eq '-fips') {
     $std_openssl_conf = $ENV{SRCTOP} . './test/fips-and-base.cnf';
     shift;
 
-    my $std_openssl_conf_include = catdir($there, 'providers');
-    $ENV{OPENSSL_CONF_INCLUDE} = $std_openssl_conf_include
-        if ($ENV{OPENSSL_CONF_INCLUDE} // '') eq ''
-            && -d $std_openssl_conf_include;
+    $std_openssl_conf_include = catdir($there, 'providers');
 }
 
-$ENV{OPENSSL_ENGINES} = $std_engines
+if ($ARGV[0] eq '-jitter') {
+    $std_openssl_conf = $ENV{SRCTOP} . './test/default-and-jitter.cnf';
+    shift;
+
+    $std_openssl_conf_include = catdir($there, 'providers');
+}
+
+
+local $ENV{OPENSSL_CONF_INCLUDE} = $std_openssl_conf_include
+    if defined $std_openssl_conf_include
+       &&($ENV{OPENSSL_CONF_INCLUDE} // '') eq ''
+       && -d $std_openssl_conf_include;
+local $ENV{OPENSSL_ENGINES} = $std_engines
     if ($ENV{OPENSSL_ENGINES} // '') eq '' && -d $std_engines;
-$ENV{OPENSSL_MODULES} = $std_providers
+local $ENV{OPENSSL_MODULES} = $std_providers
     if ($ENV{OPENSSL_MODULES} // '') eq '' && -d $std_providers;
-$ENV{OPENSSL_CONF} = $std_openssl_conf
+local $ENV{OPENSSL_CONF} = $std_openssl_conf
     if ($ENV{OPENSSL_CONF} // '') eq '' && -f $std_openssl_conf;
 
 my $use_system = 0;
@@ -59,7 +69,10 @@ my $waitcode = system @cmd;
 die "wrap.pl: Failed to execute '", join(' ', @cmd), "': $!\n"
     if $waitcode == -1;
 
-# When the subprocess aborted on a signal, mimic what Unix shells do, by
+# When the subprocess aborted on a signal, we simply raise the same signal.
+kill(($? & 255) => $$) if ($? & 255) != 0;
+
+# If that didn't stop this script, mimic what Unix shells do, by
 # converting the signal code to an exit code by setting the high bit.
 # This only happens on Unix flavored operating systems, the others don't
 # have this sort of signaling to date, and simply leave the low byte zero.

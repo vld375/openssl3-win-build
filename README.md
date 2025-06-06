@@ -2,7 +2,7 @@
 
 openssl-3 Windows build with Visual Studio.
 
-This version is openssl-3.0.0.
+This version is openssl-3.5.0.
 
 To build, simply open the required solution file, and
 you know how to use Visual Studio, right?
@@ -21,8 +21,8 @@ Build zlib first and then openssl3, with the same corresponding Visual Studio so
 
 Note that only zlib static libraries are used.
 
-This repository tracks the openssl 3 series.
-For openssl 1.0, check repository https://github.com/kiyolee/openssl1_0-win-build.git.
+This repository tracks the openssl 3 series.\
+For openssl 1.0, check repository https://github.com/kiyolee/openssl1_0-win-build.git. \
 For openssl 1.1, check repository https://github.com/kiyolee/openssl1_1-win-build.git.
 
 ### Highlights:
@@ -39,8 +39,8 @@ The following third party tools are required:
 1. Perl
 
    Any reasonably recent version should be fine.\
-   ActivePerl from ActiveState is used to develop this project.\
-   Download ActivePerl from https://www.activestate.com/activeperl/.
+   Strawberry Perl is used to develop this project.\
+   Download Strawberry Perl from https://strawberryperl.com/.
 
 2. NASM (Assembler)
 
@@ -76,13 +76,14 @@ To test all binaries that have been built:
 It is not necessary to install OpenSSL to develop applications linking to
 OpenSSL libraries built with this repository.
 
-Every $(OutDir) for different combinations of Platform and Configuration
+Every \$(OutDir) for different combinations of Platform and Configuration
 from a solution has a copy of "include\openssl" which is the same as what
 get installed like the official package. Note that the include directories
-are exactly the same between different Platforms and/or Configurations.
+are exactly the same between different Platforms and/or Configurations. The
+duplication is required to facilitate batch/parallel builds.
 
-For a project to use OpenSSL from this repository, simply add "$(OutDir)\include"
-to the include path and link to libraries from $(OutDir). Note that $(OutDir) is
+For a project to use OpenSSL from this repository, simply add "\$(OutDir)\include"
+to the include path and link to libraries from \$(OutDir). Note that \$(OutDir) is
 just a reference here and may need specific value for the project depending on
 the combination of Visual Studio version, Platform and Configuration required.
 

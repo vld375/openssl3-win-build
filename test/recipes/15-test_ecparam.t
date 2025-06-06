@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Copyright 2017-2021 The OpenSSL Project Authors. All Rights Reserved.
+# Copyright 2017-2025 The OpenSSL Project Authors. All Rights Reserved.
 #
 # Licensed under the Apache License 2.0 (the "License").  You may not use
 # this file except in compliance with the License.  You can obtain a copy
@@ -11,9 +11,10 @@ use strict;
 use warnings;
 
 use File::Spec;
-use File::Compare qw/compare_text/;
+use File::Copy;
+use File::Compare qw/compare_text compare/;
 use OpenSSL::Glob;
-use OpenSSL::Test qw/:DEFAULT data_file/;
+use OpenSSL::Test qw/:DEFAULT data_file srctop_file bldtop_dir/;
 use OpenSSL::Test::Utils;
 
 setup("test_ecparam");
@@ -25,7 +26,11 @@ my @valid = glob(data_file("valid", "*.pem"));
 my @noncanon = glob(data_file("noncanon", "*.pem"));
 my @invalid = glob(data_file("invalid", "*.pem"));
 
-plan tests => 11;
+if (disabled("sm2")) {
+    @valid = grep { !/sm2-.*\.pem/} @valid;
+}
+
+plan tests => 14;
 
 sub checkload {
     my $files = shift; # List of files
@@ -58,6 +63,21 @@ sub checkcompare {
             $in1 ne $in2}), "Original file $_ is the same as new one");
     }
 }
+
+sub check_identical {
+    my $apps = shift; # List of applications
+
+    foreach (@$apps) {
+        my $inout = "$_.tst";
+        my $backup = "backup.tst";
+
+        copy($inout, $backup);
+        ok(run(app(['openssl', $_, '-in', $inout, '-out', $inout])));
+        ok(!compare($inout, $backup), "converted file $inout did not change");
+    }
+}
+
+my $no_fips = disabled('fips') || ($ENV{NO_FIPS} // 0);
 
 subtest "Check loading valid parameters by ecparam with -check" => sub {
     plan tests => scalar(@valid);
@@ -113,3 +133,70 @@ subtest "Check pkeyparam does not change the parameter file on output" => sub {
     plan tests => 2 * scalar(@valid);
     checkcompare(\@valid, "pkeyparam");
 };
+
+my @apps = ("ecparam", "pkeyparam");
+subtest "Check param apps do not garble infile identical to outfile" => sub {
+    plan tests => 2 * scalar(@apps);
+    check_identical(\@apps);
+};
+
+subtest "Check loading of fips and non-fips params" => sub {
+    plan skip_all => "FIPS is disabled"
+        if $no_fips;
+    plan tests => 8;
+
+    my $fipsconf = srctop_file("test", "fips-and-base.cnf");
+    my $defaultconf = srctop_file("test", "default.cnf");
+
+    $ENV{OPENSSL_CONF} = $fipsconf;
+
+    ok(run(app(['openssl', 'ecparam',
+                '-in', data_file('valid', 'secp384r1-explicit.pem'),
+                '-check'])),
+       "Loading explicitly encoded valid curve");
+
+    ok(run(app(['openssl', 'ecparam',
+                '-in', data_file('valid', 'secp384r1-named.pem'),
+                '-check'])),
+       "Loading named valid curve");
+
+    ok(!run(app(['openssl', 'ecparam',
+                '-in', data_file('valid', 'secp112r1-named.pem'),
+                '-check'])),
+       "Fail loading named non-fips curve");
+
+    ok(!run(app(['openssl', 'pkeyparam',
+                '-in', data_file('valid', 'secp112r1-named.pem'),
+                '-check'])),
+       "Fail loading named non-fips curve using pkeyparam");
+
+    ok(run(app(['openssl', 'ecparam',
+                '-provider', 'default',
+                '-propquery', '?fips!=yes',
+                '-in', data_file('valid', 'secp112r1-named.pem'),
+                '-check'])),
+       "Loading named non-fips curve in FIPS mode with non-FIPS property".
+       " query");
+
+    ok(run(app(['openssl', 'pkeyparam',
+                '-provider', 'default',
+                '-propquery', '?fips!=yes',
+                '-in', data_file('valid', 'secp112r1-named.pem'),
+                '-check'])),
+       "Loading named non-fips curve in FIPS mode with non-FIPS property".
+       " query using pkeyparam");
+
+    ok(!run(app(['openssl', 'ecparam',
+                '-genkey', '-name', 'secp112r1'])),
+       "Fail generating key for named non-fips curve");
+
+    ok(run(app(['openssl', 'ecparam',
+                '-provider', 'default',
+                '-propquery', '?fips!=yes',
+                '-genkey', '-name', 'secp112r1'])),
+       "Generating key for named non-fips curve with non-FIPS property query");
+
+    $ENV{OPENSSL_CONF} = $defaultconf;
+};
+
+ok(run(app(['openssl', 'ecparam', '-list_curves'])), "Test -list_curves");

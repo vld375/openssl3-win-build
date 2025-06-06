@@ -7,9 +7,15 @@ Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg="
 This is an S/MIME signed message
 
 ------C124D5D1A319E09E6A4BB51A44961168
+<<<<<<< HEAD
 Content-Type: text/plain
 
 This is a sample signed message.
+=======
+Content-Type: text/plain
+
+This is a sample signed message.
+>>>>>>> develop-kv
 
 ------C124D5D1A319E09E6A4BB51A44961168
 Content-Type: application/pkcs7-signature; name="smime.p7s"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2024 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -76,6 +76,7 @@ typedef struct {
     /* KDF output length */
     size_t kdf_outlen;
     char *kdf_cekalg;
+    OSSL_FIPS_IND_DECLARE
 } PROV_DH_CTX;
 
 static void *dh_newctx(void *provctx)
@@ -88,10 +89,35 @@ static void *dh_newctx(void *provctx)
     pdhctx = OPENSSL_zalloc(sizeof(PROV_DH_CTX));
     if (pdhctx == NULL)
         return NULL;
+    OSSL_FIPS_IND_INIT(pdhctx)
     pdhctx->libctx = PROV_LIBCTX_OF(provctx);
     pdhctx->kdf_type = PROV_DH_KDF_NONE;
     return pdhctx;
 }
+
+#ifdef FIPS_MODULE
+static int dh_check_key(PROV_DH_CTX *ctx)
+{
+    int key_approved = ossl_dh_check_key(ctx->dh);
+
+    if (!key_approved) {
+        if (!OSSL_FIPS_IND_ON_UNAPPROVED(ctx, OSSL_FIPS_IND_SETTABLE0,
+                                         ctx->libctx, "DH Init", "DH Key",
+                                         ossl_fips_config_securitycheck_enabled)) {
+            ERR_raise(ERR_LIB_PROV, PROV_R_INVALID_KEY_LENGTH);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int digest_check(PROV_DH_CTX *ctx, const EVP_MD *md)
+{
+    return ossl_fips_ind_digest_exch_check(OSSL_FIPS_IND_GET(ctx),
+                                           OSSL_FIPS_IND_SETTABLE1, ctx->libctx,
+                                           md, "DH Set Ctx");
+}
+#endif
 
 static int dh_init(void *vpdhctx, void *vdh, const OSSL_PARAM params[])
 {
@@ -105,8 +131,15 @@ static int dh_init(void *vpdhctx, void *vdh, const OSSL_PARAM params[])
     DH_free(pdhctx->dh);
     pdhctx->dh = vdh;
     pdhctx->kdf_type = PROV_DH_KDF_NONE;
-    return dh_set_ctx_params(pdhctx, params)
-           && ossl_dh_check_key(pdhctx->libctx, vdh);
+
+    OSSL_FIPS_IND_SET_APPROVED(pdhctx)
+    if (!dh_set_ctx_params(pdhctx, params))
+        return 0;
+#ifdef FIPS_MODULE
+    if (!dh_check_key(pdhctx))
+        return 0;
+#endif
+    return 1;
 }
 
 /* The 2 parties must share the same domain parameters */
@@ -141,7 +174,7 @@ static int dh_set_peer(void *vpdhctx, void *vdh)
 
 static int dh_plain_derive(void *vpdhctx,
                            unsigned char *secret, size_t *secretlen,
-                           size_t outlen)
+                           size_t outlen, unsigned int pad)
 {
     PROV_DH_CTX *pdhctx = (PROV_DH_CTX *)vpdhctx;
     int ret;
@@ -164,7 +197,7 @@ static int dh_plain_derive(void *vpdhctx,
     }
 
     DH_get0_key(pdhctx->dhpeer, &pub_key, NULL);
-    if (pdhctx->pad)
+    if (pad)
         ret = DH_compute_key_padded(secret, pub_key, pdhctx->dh);
     else
         ret = DH_compute_key(secret, pub_key, pdhctx->dh);
@@ -192,13 +225,11 @@ static int dh_X9_42_kdf_derive(void *vpdhctx, unsigned char *secret,
         ERR_raise(ERR_LIB_PROV, PROV_R_OUTPUT_BUFFER_TOO_SMALL);
         return 0;
     }
-    if (!dh_plain_derive(pdhctx, NULL, &stmplen, 0))
+    if (!dh_plain_derive(pdhctx, NULL, &stmplen, 0, 1))
         return 0;
-    if ((stmp = OPENSSL_secure_malloc(stmplen)) == NULL) {
-        ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
+    if ((stmp = OPENSSL_secure_malloc(stmplen)) == NULL)
         return 0;
-    }
-    if (!dh_plain_derive(pdhctx, stmp, &stmplen, stmplen))
+    if (!dh_plain_derive(pdhctx, stmp, &stmplen, stmplen, 1))
         goto err;
 
     /* Do KDF stuff */
@@ -229,7 +260,8 @@ static int dh_derive(void *vpdhctx, unsigned char *secret,
 
     switch (pdhctx->kdf_type) {
         case PROV_DH_KDF_NONE:
-            return dh_plain_derive(pdhctx, secret, psecretlen, outlen);
+            return dh_plain_derive(pdhctx, secret, psecretlen, outlen,
+                                   pdhctx->pad);
         case PROV_DH_KDF_X9_42_ASN1:
             return dh_X9_42_kdf_derive(pdhctx, secret, psecretlen, outlen);
         default:
@@ -292,7 +324,12 @@ static void *dh_dupctx(void *vpdhctx)
         if (dstctx->kdf_ukm == NULL)
             goto err;
     }
-    dstctx->kdf_cekalg = OPENSSL_strdup(srcctx->kdf_cekalg);
+
+    if (srcctx->kdf_cekalg != NULL) {
+        dstctx->kdf_cekalg = OPENSSL_strdup(srcctx->kdf_cekalg);
+        if (dstctx->kdf_cekalg == NULL)
+            goto err;
+    }
 
     return dstctx;
 err:
@@ -310,8 +347,15 @@ static int dh_set_ctx_params(void *vpdhctx, const OSSL_PARAM params[])
 
     if (pdhctx == NULL)
         return 0;
-    if (params == NULL)
+    if (ossl_param_is_empty(params))
         return 1;
+
+    if (!OSSL_FIPS_IND_SET_CTX_PARAM(pdhctx, OSSL_FIPS_IND_SETTABLE0, params,
+                                     OSSL_EXCHANGE_PARAM_FIPS_KEY_CHECK))
+        return  0;
+    if (!OSSL_FIPS_IND_SET_CTX_PARAM(pdhctx, OSSL_FIPS_IND_SETTABLE1, params,
+                                     OSSL_EXCHANGE_PARAM_FIPS_DIGEST_CHECK))
+        return  0;
 
     p = OSSL_PARAM_locate_const(params, OSSL_EXCHANGE_PARAM_KDF_TYPE);
     if (p != NULL) {
@@ -345,12 +389,20 @@ static int dh_set_ctx_params(void *vpdhctx, const OSSL_PARAM params[])
 
         EVP_MD_free(pdhctx->kdf_md);
         pdhctx->kdf_md = EVP_MD_fetch(pdhctx->libctx, name, mdprops);
-        if (!ossl_digest_is_allowed(pdhctx->libctx, pdhctx->kdf_md)) {
-            EVP_MD_free(pdhctx->kdf_md);
-            pdhctx->kdf_md = NULL;
-        }
         if (pdhctx->kdf_md == NULL)
             return 0;
+        /* XOF digests are not allowed */
+        if (EVP_MD_xof(pdhctx->kdf_md)) {
+            ERR_raise(ERR_LIB_PROV, PROV_R_XOF_DIGESTS_NOT_ALLOWED);
+            return 0;
+        }
+#ifdef FIPS_MODULE
+        if (!digest_check(pdhctx, pdhctx->kdf_md)) {
+            EVP_MD_free(pdhctx->kdf_md);
+            pdhctx->kdf_md = NULL;
+            return 0;
+        }
+#endif
     }
 
     p = OSSL_PARAM_locate_const(params, OSSL_EXCHANGE_PARAM_KDF_OUTLEN);
@@ -389,9 +441,16 @@ static int dh_set_ctx_params(void *vpdhctx, const OSSL_PARAM params[])
     p = OSSL_PARAM_locate_const(params, OSSL_KDF_PARAM_CEK_ALG);
     if (p != NULL) {
         str = name;
-        if (!OSSL_PARAM_get_utf8_string(p, &str, sizeof(name)))
-            return 0;
-        pdhctx->kdf_cekalg = OPENSSL_strdup(name);
+
+        OPENSSL_free(pdhctx->kdf_cekalg);
+        pdhctx->kdf_cekalg = NULL;
+        if (p->data != NULL && p->data_size != 0) {
+            if (!OSSL_PARAM_get_utf8_string(p, &str, sizeof(name)))
+                return 0;
+            pdhctx->kdf_cekalg = OPENSSL_strdup(name);
+            if (pdhctx->kdf_cekalg == NULL)
+                return 0;
+        }
     }
     return 1;
 }
@@ -404,6 +463,8 @@ static const OSSL_PARAM known_settable_ctx_params[] = {
     OSSL_PARAM_size_t(OSSL_EXCHANGE_PARAM_KDF_OUTLEN, NULL),
     OSSL_PARAM_octet_string(OSSL_EXCHANGE_PARAM_KDF_UKM, NULL, 0),
     OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_CEK_ALG, NULL, 0),
+    OSSL_FIPS_IND_SETTABLE_CTX_PARAM(OSSL_EXCHANGE_PARAM_FIPS_KEY_CHECK)
+    OSSL_FIPS_IND_SETTABLE_CTX_PARAM(OSSL_EXCHANGE_PARAM_FIPS_DIGEST_CHECK)
     OSSL_PARAM_END
 };
 
@@ -414,12 +475,13 @@ static const OSSL_PARAM *dh_settable_ctx_params(ossl_unused void *vpdhctx,
 }
 
 static const OSSL_PARAM known_gettable_ctx_params[] = {
-    OSSL_PARAM_int(OSSL_EXCHANGE_PARAM_EC_ECDH_COFACTOR_MODE, NULL),
     OSSL_PARAM_utf8_string(OSSL_EXCHANGE_PARAM_KDF_TYPE, NULL, 0),
     OSSL_PARAM_utf8_string(OSSL_EXCHANGE_PARAM_KDF_DIGEST, NULL, 0),
     OSSL_PARAM_size_t(OSSL_EXCHANGE_PARAM_KDF_OUTLEN, NULL),
     OSSL_PARAM_DEFN(OSSL_EXCHANGE_PARAM_KDF_UKM, OSSL_PARAM_OCTET_PTR,
                     NULL, 0),
+    OSSL_PARAM_utf8_string(OSSL_KDF_PARAM_CEK_ALG, NULL, 0),
+    OSSL_FIPS_IND_GETTABLE_CTX_PARAM()
     OSSL_PARAM_END
 };
 
@@ -460,7 +522,7 @@ static int dh_get_ctx_params(void *vpdhctx, OSSL_PARAM params[])
     if (p != NULL
             && !OSSL_PARAM_set_utf8_string(p, pdhctx->kdf_md == NULL
                                            ? ""
-                                           : EVP_MD_get0_name(pdhctx->kdf_md))){
+                                           : EVP_MD_get0_name(pdhctx->kdf_md))) {
         return 0;
     }
 
@@ -478,7 +540,8 @@ static int dh_get_ctx_params(void *vpdhctx, OSSL_PARAM params[])
             && !OSSL_PARAM_set_utf8_string(p, pdhctx->kdf_cekalg == NULL
                                            ? "" :  pdhctx->kdf_cekalg))
         return 0;
-
+    if (!OSSL_FIPS_IND_GET_CTX_PARAM(pdhctx, params))
+        return 0;
     return 1;
 }
 
@@ -495,5 +558,5 @@ const OSSL_DISPATCH ossl_dh_keyexch_functions[] = {
     { OSSL_FUNC_KEYEXCH_GET_CTX_PARAMS, (void (*)(void))dh_get_ctx_params },
     { OSSL_FUNC_KEYEXCH_GETTABLE_CTX_PARAMS,
       (void (*)(void))dh_gettable_ctx_params },
-    { 0, NULL }
+    OSSL_DISPATCH_END
 };

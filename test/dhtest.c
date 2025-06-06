@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2023 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -73,7 +73,7 @@ static int dh_test(void)
         goto err1;
 
     /* check fails, because p is way too small */
-    if (!DH_check(dh, &i))
+    if (!TEST_true(DH_check(dh, &i)))
         goto err2;
     i ^= DH_MODULUS_TOO_SMALL;
     if (!TEST_false(i & DH_CHECK_P_NOT_PRIME)
@@ -124,6 +124,29 @@ static int dh_test(void)
     /* We'll have a stale error on the queue from the above test so clear it */
     ERR_clear_error();
 
+    if (!TEST_ptr(BN_copy(q, p)) || !TEST_true(BN_add(q, q, BN_value_one())))
+        goto err3;
+
+    if (!TEST_true(DH_check(dh, &i)))
+        goto err3;
+    if (!TEST_true(i & DH_CHECK_INVALID_Q_VALUE)
+        || !TEST_false(i & DH_CHECK_Q_NOT_PRIME))
+        goto err3;
+
+    /* Modulus of size: dh check max modulus bits + 1 */
+    if (!TEST_true(BN_set_word(p, 1))
+            || !TEST_true(BN_lshift(p, p, OPENSSL_DH_CHECK_MAX_MODULUS_BITS)))
+        goto err3;
+
+    /*
+     * We expect no checks at all for an excessively large modulus
+     */
+    if (!TEST_false(DH_check(dh, &i)))
+        goto err3;
+
+    /* We'll have a stale error on the queue from the above test so clear it */
+    ERR_clear_error();
+
     /*
      * II) key generation
      */
@@ -138,7 +161,7 @@ static int dh_test(void)
         goto err3;
 
     /* ... and check whether it is valid */
-    if (!DH_check(a, &i))
+    if (!TEST_true(DH_check(a, &i)))
         goto err3;
     if (!TEST_false(i & DH_CHECK_P_NOT_PRIME)
             || !TEST_false(i & DH_CHECK_P_NOT_SAFE_PRIME)
@@ -577,7 +600,7 @@ static int rfc5114_test(void)
 
         if (!TEST_ptr(priv_key = BN_bin2bn(td->xB, td->xB_len, NULL))
                 || !TEST_ptr(pub_key = BN_bin2bn(td->yB, td->yB_len, NULL))
-                || !TEST_true( DH_set0_key(dhB, pub_key, priv_key)))
+                || !TEST_true(DH_set0_key(dhB, pub_key, priv_key)))
             goto bad_err;
         priv_key = pub_key = NULL;
 
@@ -730,6 +753,54 @@ err:
     return ok;
 }
 
+static int dh_rfc5114_fix_nid_test(void)
+{
+    int ok = 0;
+    EVP_PKEY_CTX *paramgen_ctx;
+
+    /* Run the test. Success is any time the test does not cause a SIGSEGV interrupt */
+    paramgen_ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_DHX, 0);
+    if (!TEST_ptr(paramgen_ctx))
+        goto err;
+    if (!TEST_int_eq(EVP_PKEY_paramgen_init(paramgen_ctx), 1))
+        goto err;
+    /* Tested function is called here */
+    if (!TEST_int_eq(EVP_PKEY_CTX_set_dhx_rfc5114(paramgen_ctx, 3), 1))
+        goto err;
+    /* Negative test */
+    if (!TEST_int_eq(EVP_PKEY_CTX_set_dhx_rfc5114(paramgen_ctx, 99), 0))
+        goto err;
+    /* If we're still running then the test passed. */
+    ok = 1;
+err:
+    EVP_PKEY_CTX_free(paramgen_ctx);
+    return ok;
+}
+
+static int dh_set_dh_nid_test(void)
+{
+    int ok = 0;
+    EVP_PKEY_CTX *paramgen_ctx;
+
+    /* Run the test. Success is any time the test does not cause a SIGSEGV interrupt */
+    paramgen_ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_DH, 0);
+    if (!TEST_ptr(paramgen_ctx))
+        goto err;
+    if (!TEST_int_eq(EVP_PKEY_paramgen_init(paramgen_ctx), 1))
+        goto err;
+    /* Tested function is called here */
+    if (!TEST_int_eq(EVP_PKEY_CTX_set_dh_nid(paramgen_ctx, NID_ffdhe2048), 1))
+        goto err;
+    /* Negative test */
+    if (!TEST_int_eq(EVP_PKEY_CTX_set_dh_nid(paramgen_ctx, NID_secp521r1), 0))
+        goto err;
+    /* If we're still running then the test passed. */
+    ok = 1;
+err:
+    EVP_PKEY_CTX_free(paramgen_ctx);
+    return ok;
+}
+
 static int dh_get_nid(void)
 {
     int ok = 0;
@@ -876,6 +947,8 @@ int setup_tests(void)
     ADD_ALL_TESTS(dh_test_prime_groups, OSSL_NELEM(prime_groups));
     ADD_TEST(dh_get_nid);
     ADD_TEST(dh_load_pkcs3_namedgroup_privlen_test);
+    ADD_TEST(dh_rfc5114_fix_nid_test);
+    ADD_TEST(dh_set_dh_nid_test);
 #endif
     return 1;
 }

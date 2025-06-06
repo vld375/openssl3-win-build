@@ -7,7 +7,7 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -73,6 +73,12 @@
       <Filter>Source Files\apps\lib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\apps\lib\app_libctx.c">
+      <Filter>Source Files\apps\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\apps\lib\apps_opt_printf.c">
+      <Filter>Source Files\apps\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\apps\lib\log.c">
       <Filter>Source Files\apps\lib</Filter>
     </ClCompile>
   </ItemGroup>

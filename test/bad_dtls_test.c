@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2016-2024 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -331,7 +331,7 @@ static int send_record(BIO *rbio, unsigned char type, uint64_t seqnr,
     } while (len % 16);
 
     /* Generate IV, and encrypt */
-    if (!TEST_true(RAND_bytes(iv, sizeof(iv)))
+    if (!TEST_int_gt(RAND_bytes(iv, sizeof(iv)), 0)
             || !TEST_ptr(enc_ctx = EVP_CIPHER_CTX_new())
             || !TEST_true(EVP_CipherInit_ex(enc_ctx, EVP_aes_128_cbc(), NULL,
                                             enc_key, iv, 1))
@@ -370,6 +370,7 @@ static int send_finished(SSL *s, BIO *rbio)
         /* Finished MAC (12 bytes) */
     };
     unsigned char handshake_hash[EVP_MAX_MD_SIZE];
+    int md_size;
 
     /* Derive key material */
     do_PRF(TLS_MD_KEY_EXPANSION_CONST, TLS_MD_KEY_EXPANSION_CONST_SIZE,
@@ -381,8 +382,11 @@ static int send_finished(SSL *s, BIO *rbio)
     if (!EVP_DigestFinal_ex(handshake_md, handshake_hash, NULL))
         return 0;
 
+    md_size = EVP_MD_CTX_get_size(handshake_md);
+    if (md_size <= 0)
+        return 0;
     do_PRF(TLS_MD_SERVER_FINISH_CONST, TLS_MD_SERVER_FINISH_CONST_SIZE,
-           handshake_hash, EVP_MD_CTX_get_size(handshake_md),
+           handshake_hash, md_size,
            NULL, 0,
            finished_msg + DTLS1_HM_HEADER_LENGTH, TLS1_FINISH_MAC_LENGTH);
 
@@ -499,11 +503,11 @@ static int test_bad_dtls(void)
             || !TEST_true(SSL_CTX_set_cipher_list(ctx, "AES128-SHA")))
         goto end;
 
+    SSL_CTX_set_security_level(ctx, 0);
     con = SSL_new(ctx);
     if (!TEST_ptr(con)
             || !TEST_true(SSL_set_session(con, sess)))
         goto end;
-    SSL_SESSION_free(sess);
 
     rbio = BIO_new(BIO_s_mem());
     wbio = BIO_new(BIO_s_mem());
@@ -591,6 +595,7 @@ static int test_bad_dtls(void)
     testresult = 1;
 
  end:
+    SSL_SESSION_free(sess);
     BIO_free(rbio);
     BIO_free(wbio);
     SSL_free(con);

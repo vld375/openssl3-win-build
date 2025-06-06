@@ -8,7 +8,7 @@ SSL_group_to_name - get name of group
 
  #include <openssl/ssl.h>
 
- const char *SSL_group_to_name(const SSL *ssl, int id);
+ const char *SSL_group_to_name(SSL *ssl, int id);
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ or SSL_get_shared_group().
 =head1 RETURN VALUES
 
 If non-NULL, SSL_group_to_name() returns the TLS group name
-corresponding to the given I<id> as a NULL-terminated string.
+corresponding to the given I<id> as a NUL-terminated string.
 If SSL_group_to_name() returns NULL, an error occurred; possibly no
 corresponding tlsname was registered during provider initialisation.
 
@@ -33,7 +33,7 @@ L<ssl(7)>
 
 =head1 COPYRIGHT
 
-Copyright 2021 The OpenSSL Project Authors. All Rights Reserved.
+Copyright 2021-2024 The OpenSSL Project Authors. All Rights Reserved.
 
 Licensed under the Apache License 2.0 (the "License").  You may not use
 this file except in compliance with the License.  You can obtain a copy

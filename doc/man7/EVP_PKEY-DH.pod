@@ -2,34 +2,30 @@
 
 =head1 NAME
 
-EVP_PKEY-DH, EVP_PKEY-DHX, EVP_KEYMGMT-DH
+EVP_PKEY-DH, EVP_PKEY-DHX, EVP_KEYMGMT-DH, EVP_KEYMGMT-DHX
 - EVP_PKEY DH and DHX keytype and algorithm support
 
 =head1 DESCRIPTION
 
-For B<DH> FFC key agreement, two classes of domain parameters can be used:
-"safe" domain parameters that are associated with approved named safe-prime
-groups, and a class of "FIPS 186-type" domain parameters. FIPS 186-type domain
-parameters should only be used for backward compatibility with existing
-applications that cannot be upgraded to use the approved safe-prime groups.
+For finite field Diffie-Hellman key agreement, two classes of domain
+parameters can be used: "safe" domain parameters that are associated with
+approved named safe-prime groups, and a class of "FIPS186-type" domain
+parameters. FIPS186-type domain parameters should only be used for backward
+compatibility with existing applications that cannot be upgraded to use the
+approved safe-prime groups.
 
 See L<EVP_PKEY-FFC(7)> for more information about FFC keys.
 
-The B<DH> key type uses PKCS#3 format which saves p and g, but not the 'q' value.
-The B<DHX> key type uses X9.42 format which saves the value of 'q' and this
-must be used for FIPS186-4.
-
-For B<DHX> that is not a named group the FIPS186-4 standard specifies that the
-values used for FFC parameter generation are also required for parameter
-validation. This means that optional FFC domain parameter values for
-I<seed>, I<pcounter> and I<gindex> or I<hindex> may need to be stored for
-validation purposes.
-For B<DHX> the I<seed> and I<pcounter> can be stored in ASN1 data
-(but the I<gindex> or I<hindex> can not be stored).
+The B<DH> key type uses PKCS#3 format which saves I<p> and I<g>, but not the
+I<q> value.
+The B<DHX> key type uses X9.42 format which saves the value of I<q> and this
+must be used for FIPS186-4. If key validation is required, users should be aware
+of the nuances associated with FIPS186-4 style parameters as discussed in
+L</DH and DHX key validation>.
 
 =head2 DH and DHX domain parameters
 
-In addition to the common FCC parameters that all FFC keytypes should support
+In addition to the common FFC parameters that all FFC keytypes should support
 (see L<EVP_PKEY-FFC(7)/FFC parameters>) the B<DHX> and B<DH> keytype
 implementations support the following:
 
@@ -74,7 +70,7 @@ See EVP_PKEY_set1_encoded_public_key() and EVP_PKEY_get1_encoded_public_key().
 Used for DH generation of safe primes using the old safe prime generator code.
 The default value is 2.
 It is recommended to use a named safe prime group instead, if domain parameter
-validation is required. 
+validation is required.
 
 Randomly generated safe primes are not allowed by FIPS, so setting this value
 for the OpenSSL FIPS provider will instead choose a named safe prime group
@@ -134,6 +130,45 @@ Where s is the security strength of the key which has values of
 
 =back
 
+=head2 DH and DHX key validation
+
+For keys that are not a named group the FIPS186-4 standard specifies that the
+values used for FFC parameter generation are also required for parameter
+validation. This means that optional FFC domain parameter values for
+I<seed>, I<pcounter> and I<gindex> or I<hindex> may need to be stored for
+validation purposes.
+For B<DHX> the I<seed> and I<pcounter> can be stored in ASN1 data
+(but the I<gindex> or I<hindex> cannot be stored). It is recommended to use a
+B<DH> parameters with named safe prime group instead.
+
+With the OpenSSL FIPS provider, L<EVP_PKEY_param_check(3)> and
+L<EVP_PKEY_param_check_quick(3)> behave in the following way: the parameters
+are tested if they are either an approved safe prime group OR that the FFC
+parameters conform to FIPS186-4 as defined in SP800-56Ar3 I<Assurances of
+Domain-Parameter Validity>.
+
+The OpenSSL default provider uses simpler checks that allows there to be no I<q>
+value for backwards compatibility, however the L<EVP_PKEY_param_check(3)> will
+test the I<p> value for being a prime (and a safe prime if I<q> is missing)
+which can take significant time. The L<EVP_PKEY_param_check_quick(3)> avoids
+the prime tests.
+
+L<EVP_PKEY_public_check(3)> conforms to SP800-56Ar3
+I<FFC Full Public-Key Validation>.
+
+L<EVP_PKEY_public_check_quick(3)> conforms to SP800-56Ar3
+I<FFC Partial Public-Key Validation> when the key is an approved named safe
+prime group, otherwise it is the same as L<EVP_PKEY_public_check(3)>.
+
+L<EVP_PKEY_private_check(3)> tests that the private key is in the correct range
+according to SP800-56Ar3. The OpenSSL FIPS provider requires the value of I<q>
+to be set (note that this is implicitly set for named safe prime groups).
+For backwards compatibility the OpenSSL default provider only requires I<p> to
+be set.
+
+L<EVP_PKEY_pairwise_check(3)> conforms to SP800-56Ar3
+I<Owner Assurance of Pair-wise Consistency>.
+
 =head1 EXAMPLES
 
 An B<EVP_PKEY> context can be obtained by calling:
@@ -156,10 +191,10 @@ A B<DH> key can be generated with a named safe prime group by calling:
     EVP_PKEY_CTX_set_params(pctx, params);
     EVP_PKEY_generate(pctx, &pkey);
     ...
-    EVP_PKEY_free(key);
+    EVP_PKEY_free(pkey);
     EVP_PKEY_CTX_free(pctx);
 
-B<DHX> domain parameters can be generated according to B<FIPS 186-4> by calling:
+B<DHX> domain parameters can be generated according to B<FIPS186-4> by calling:
 
     int gindex = 2;
     unsigned int pbits = 2048;
@@ -198,7 +233,7 @@ A B<DH> key can be generated using domain parameters by calling:
     EVP_PKEY_free(key);
     EVP_PKEY_CTX_free(gctx);
 
-To validate B<FIPS 186-4> B<DHX> domain parameters decoded from B<PEM> or
+To validate B<FIPS186-4> B<DHX> domain parameters decoded from B<PEM> or
 B<DER> data, additional values used during generation may be required to
 be set into the key.
 
@@ -270,7 +305,7 @@ The following sections of SP800-56Ar3:
 
 =back
 
-The following sections of FIPS 186-4:
+The following sections of FIPS186-4:
 
 =over 4
 
@@ -294,7 +329,7 @@ L<OSSL_PROVIDER-FIPS(7)>
 
 =head1 COPYRIGHT
 
-Copyright 2020-2021 The OpenSSL Project Authors. All Rights Reserved.
+Copyright 2020-2024 The OpenSSL Project Authors. All Rights Reserved.
 
 Licensed under the Apache License 2.0 (the "License").  You may not use
 this file except in compliance with the License.  You can obtain a copy

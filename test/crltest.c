@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2015-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -97,6 +97,13 @@ static const char *kRevokedCRL[] = {
     "OaSvIYGpETCZJscUWODmLEb/O3DM438vLvxonwGqXqS0KX37+CHpUlyhnSovxXxp\n",
     "Pz4aF+L7OtczxL0GYtD2fR9B7TDMqsNmHXgQrixvvOY7MUdLGbd4RfJL3yA53hyO\n",
     "xzfKY2TzxLiOmctG0hXFkH5J\n",
+    "-----END X509 CRL-----\n",
+    NULL
+};
+
+static const char *kInvalidCRL[] = {
+    "-----BEGIN X509 CRL-----\n",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
     "-----END X509 CRL-----\n",
     NULL
 };
@@ -200,9 +207,16 @@ static BIO *glue2bio(const char **pem, char **out)
  */
 static X509_CRL *CRL_from_strings(const char **pem)
 {
+    X509_CRL *crl;
     char *p;
     BIO *b = glue2bio(pem, &p);
-    X509_CRL *crl = PEM_read_bio_X509_CRL(b, NULL, NULL, NULL);
+
+    if (b == NULL) {
+        OPENSSL_free(p);
+        return NULL;
+    }
+
+    crl = PEM_read_bio_X509_CRL(b, NULL, NULL, NULL);
 
     OPENSSL_free(p);
     BIO_free(b);
@@ -214,9 +228,16 @@ static X509_CRL *CRL_from_strings(const char **pem)
  */
 static X509 *X509_from_strings(const char **pem)
 {
+    X509 *x;
     char *p;
     BIO *b = glue2bio(pem, &p);
-    X509 *x = PEM_read_bio_X509(b, NULL, NULL, NULL);
+
+    if (b == NULL) {
+        OPENSSL_free(p);
+        return NULL;
+    }
+
+    x = PEM_read_bio_X509(b, NULL, NULL, NULL);
 
     OPENSSL_free(p);
     BIO_free(b);
@@ -245,9 +266,13 @@ static int verify(X509 *leaf, X509 *root, STACK_OF(X509_CRL) *crls,
         goto err;
 
     /* Create a stack; upref the cert because we free it below. */
-    X509_up_ref(root);
-    if (!TEST_true(sk_X509_push(roots, root))
-        || !TEST_true(X509_STORE_CTX_init(ctx, store, leaf, NULL)))
+    if (!TEST_true(X509_up_ref(root)))
+        goto err;
+    if (!TEST_true(sk_X509_push(roots, root))) {
+        X509_free(root);
+        goto err;
+    }
+    if (!TEST_true(X509_STORE_CTX_init(ctx, store, leaf, NULL)))
         goto err;
     X509_STORE_CTX_set0_trusted_stack(ctx, roots);
     X509_STORE_CTX_set0_crls(ctx, crls);
@@ -264,7 +289,7 @@ static int verify(X509 *leaf, X509 *root, STACK_OF(X509_CRL) *crls,
     status = X509_verify_cert(ctx) == 1 ? X509_V_OK
                                         : X509_STORE_CTX_get_error(ctx);
 err:
-    sk_X509_pop_free(roots, X509_free);
+    OSSL_STACK_OF_X509_free(roots);
     sk_X509_CRL_pop_free(crls, X509_CRL_free);
     X509_VERIFY_PARAM_free(param);
     X509_STORE_CTX_free(ctx);
@@ -281,13 +306,29 @@ static STACK_OF(X509_CRL) *make_CRL_stack(X509_CRL *x1, X509_CRL *x2)
 {
     STACK_OF(X509_CRL) *sk = sk_X509_CRL_new_null();
 
-    sk_X509_CRL_push(sk, x1);
-    X509_CRL_up_ref(x1);
-    if (x2 != NULL) {
-        sk_X509_CRL_push(sk, x2);
-        X509_CRL_up_ref(x2);
+    if (x1 != NULL) {
+        if (!X509_CRL_up_ref(x1))
+            goto err;
+        if (!sk_X509_CRL_push(sk, x1)) {
+            X509_CRL_free(x1);
+            goto err;
+        }
     }
+
+    if (x2 != NULL) {
+        if (!X509_CRL_up_ref(x2))
+            goto err;
+        if (!sk_X509_CRL_push(sk, x2)) {
+            X509_CRL_free(x2);
+            goto err;
+        }
+    }
+
     return sk;
+
+err:
+    sk_X509_CRL_pop_free(sk, X509_CRL_free);
+    return NULL;
 }
 
 static int test_basic_crl(void)
@@ -357,18 +398,58 @@ static int test_unknown_critical_crl(int n)
     return r;
 }
 
-static int test_reuse_crl(void)
+static int test_reuse_crl(int idx)
 {
-    X509_CRL *reused_crl = CRL_from_strings(kBasicCRL);
-    char *p;
-    BIO *b = glue2bio(kRevokedCRL, &p);
+    X509_CRL *result, *reused_crl = CRL_from_strings(kBasicCRL);
+    X509_CRL *addref_crl = NULL;
+    char *p = NULL;
+    BIO *b = NULL;
+    int r = 0;
 
-    reused_crl = PEM_read_bio_X509_CRL(b, &reused_crl, NULL, NULL);
+    if (!TEST_ptr(reused_crl))
+        goto err;
 
+    if (idx & 1) {
+        if (!TEST_true(X509_CRL_up_ref(reused_crl)))
+            goto err;
+	addref_crl = reused_crl;
+    }
+
+    idx >>= 1;
+    b = glue2bio(idx == 2 ? kRevokedCRL : kInvalidCRL + idx, &p);
+
+    if (!TEST_ptr(b))
+        goto err;
+
+    result = PEM_read_bio_X509_CRL(b, &reused_crl, NULL, NULL);
+
+    switch (idx) {
+    case 0: /* valid PEM + invalid DER */
+        if (!TEST_ptr_null(result)
+                || !TEST_ptr_null(reused_crl))
+            goto err;
+        break;
+    case 1: /* invalid PEM */
+        if (!TEST_ptr_null(result)
+                || !TEST_ptr(reused_crl))
+            goto err;
+        break;
+    case 2:
+        if (!TEST_ptr(result)
+                || !TEST_ptr(reused_crl)
+                || !TEST_ptr_eq(result, reused_crl))
+            goto err;
+        break;
+    }
+
+    r = 1;
+
+ err:
     OPENSSL_free(p);
     BIO_free(b);
     X509_CRL_free(reused_crl);
-    return 1;
+    X509_CRL_free(addref_crl);
+    return r;
 }
 
 int setup_tests(void)
@@ -382,7 +463,7 @@ int setup_tests(void)
     ADD_TEST(test_bad_issuer_crl);
     ADD_TEST(test_known_critical_crl);
     ADD_ALL_TESTS(test_unknown_critical_crl, OSSL_NELEM(unknown_critical_crls));
-    ADD_TEST(test_reuse_crl);
+    ADD_ALL_TESTS(test_reuse_crl, 6);
     return 1;
 }
 

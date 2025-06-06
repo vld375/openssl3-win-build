@@ -7,7 +7,7 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -166,9 +166,6 @@
       <Filter>Header Files\include\openssl</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\..\include\openssl\asn1.h">
-      <Filter>Header Files\include\openssl</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\include\openssl\asn1_mac.h">
       <Filter>Header Files\include\openssl</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\..\include\openssl\asn1err.h">
@@ -427,6 +424,30 @@
       <Filter>Header Files\include\openssl</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\..\include\openssl\prov_ssl.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\e_ostime.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\hpke.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\quic.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\thread.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\indicator.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\x509_acert.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\byteorder.h">
+      <Filter>Header Files\include\openssl</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\include\openssl\ml_kem.h">
       <Filter>Header Files\include\openssl</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="..\..\ms\applink.c">

@@ -3878,6 +3878,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "slh_dsa_test", "tests\slh_d
 		{EFBC9744-A234-4EBE-8D81-EB233CDFD6AA} = {EFBC9744-A234-4EBE-8D81-EB233CDFD6AA}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwocrypt-provider", "..\lwocrypt-provider\lwocrypt-provider.vcxproj", "{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwocrypt-algo", "..\lwocrypt-algo\lwocrypt-algo.vcxproj", "{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -8326,6 +8330,22 @@ Global
 		{E35722DD-4713-4083-B826-3857542FF927}.Release|Win32.Build.0 = Release|Win32
 		{E35722DD-4713-4083-B826-3857542FF927}.Release|x64.ActiveCfg = Release|x64
 		{E35722DD-4713-4083-B826-3857542FF927}.Release|x64.Build.0 = Release|x64
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Debug|Win32.Build.0 = Debug|Win32
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Debug|x64.ActiveCfg = Debug|x64
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Debug|x64.Build.0 = Debug|x64
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Release|Win32.ActiveCfg = Release|Win32
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Release|Win32.Build.0 = Release|Win32
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Release|x64.ActiveCfg = Release|x64
+		{32E468C1-F2BE-4D4B-BB1F-7367BD6C354B}.Release|x64.Build.0 = Release|x64
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Debug|Win32.Build.0 = Debug|Win32
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Debug|x64.ActiveCfg = Debug|x64
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Debug|x64.Build.0 = Debug|x64
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Release|Win32.ActiveCfg = Release|Win32
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Release|Win32.Build.0 = Release|Win32
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Release|x64.ActiveCfg = Release|x64
+		{1926CB85-E3C0-4EA2-A14A-E004DF4B475A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,706 @@
+/*
+ * Copyright 2023. All Rights Reserved.
+ */
+#include <stdio.h>
+#include <string.h>
+
+#include <internal/refcount.h>
+#include <openssl/crypto.h>
+#include <openssl/x509v3.h>
+#include <openssl/obj_mac.h>
+
+
+#include <openssl/core_names.h>  // Для стандартных имен параметров
+#include <openssl/params.h>      // Для работы с OSSL_PARAM
+#include <openssl/evp.h>         // Для EVP-интерфейсов
+#include <openssl/ec.h>          // Для EC кривых
+#include <openssl/bn.h>          // Для работы с большими числами
+#include <openssl/err.h>         // Для обработки ошибок
+#include <openssl/proverr.h>
+
+#include <lwocrypt-alg/bignerr.h>
+#include <lwocrypt-alg/bign_local.h>
+#include <lwocrypt-alg/bign.h>
+
+
+
+
+
+
+//==== vld add =====================================================================
+typedef struct {
+	int field_type,             /* either NID_X9_62_prime_field or NID_X9_62_characteristic_two_field */
+		seed_len, 
+		param_len;
+	unsigned int cofactor;      /* promoted to BN_ULONG */
+} EC_CURVE_DATA;
+
+
+
+static const struct {
+	EC_CURVE_DATA h;
+	unsigned char data[8 + 32 * 6];
+} _EC_BIGN_256V1 = {
+	{
+		NID_X9_62_prime_field, 8, 32, 1
+	},
+	{
+		/* seed */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x38, 0x5E,
+		/* p */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x43,
+		/* a */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x40,
+		/* b */
+		0x77, 0xCE, 0x6C, 0x15, 0x15, 0xF3, 0xA8, 0xED, 0xD2, 0xC1, 0x3A, 0xAB,
+		0xE4, 0xD8, 0xFB, 0xBE, 0x4C, 0xF5, 0x50, 0x69, 0x97, 0x8B, 0x92, 0x53,
+		0xB2, 0x2E, 0x7D, 0x6B, 0xD6, 0x9C, 0x03, 0xF1,
+		/* x */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		/* y */
+		0x6B, 0xF7, 0xFC, 0x3C, 0xFB, 0x16, 0xD6, 0x9F, 0x5C, 0xE4, 0xC9, 0xA3,
+		0x51, 0xD6, 0x83, 0x5D, 0x78, 0x91, 0x39, 0x66, 0xC4, 0x08, 0xF6, 0x52,
+		0x1E, 0x29, 0xCF, 0x18, 0x04, 0x51, 0x6A, 0x93,
+		/* order */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xD9, 0x5C, 0x8E, 0xD6, 0x0D, 0xFB, 0x4D, 0xFC,
+		0x7E, 0x5A, 0xBF, 0x99, 0x26, 0x3D, 0x66, 0x07
+	}
+};
+
+static const struct {
+	EC_CURVE_DATA h;
+	unsigned char data[8 + 48 * 6];
+} _EC_BIGN_384V1 = {
+	{
+		NID_X9_62_prime_field, 8, 48, 1
+	},
+	{
+		/* seed */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAF, 0x23,
+		/* p */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xC3,
+		/* a */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0xC0,
+		/* b */
+		0x3C, 0x75, 0xDF, 0xE1, 0x95, 0x9C, 0xEF, 0x20, 0x33, 0x07, 0x5A, 0xAB,
+		0x65, 0x5D, 0x34, 0xD2, 0x71, 0x27, 0x48, 0xBB, 0x0F, 0xFB, 0xB1, 0x96,
+		0xA6, 0x21, 0x6A, 0xF9, 0xE9, 0x71, 0x2E, 0x3A, 0x14, 0xBD, 0xE2, 0xF0,
+		0xF3, 0xCE, 0xBD, 0x7C, 0xBC, 0xA7, 0xFC, 0x23, 0x68, 0x73, 0xBF, 0x64,
+		/* x */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		/* y */
+		0x5D, 0x43, 0x82, 0x24, 0xA8, 0x2E, 0x9E, 0x9E, 0x63, 0x30, 0x11, 0x7E,
+		0x43, 0x2D, 0xBF, 0x89, 0x3A, 0x72, 0x9A, 0x11, 0xDC, 0x86, 0xFF, 0xA0,
+		0x05, 0x49, 0xE7, 0x9E, 0x66, 0xB1, 0xD3, 0x55, 0x84, 0x40, 0x3E, 0x27,
+		0x6B, 0x2A, 0x42, 0xF9, 0xEA, 0x5E, 0xCB, 0x31, 0xF7, 0x33, 0xC4, 0x51,
+		/* order */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE,
+		0x6C, 0xCC, 0xC4, 0x03, 0x73, 0xAF, 0x7B, 0xBB, 0x80, 0x46, 0xDA, 0xE7,
+		0xA6, 0xA4, 0xFF, 0x0A, 0x3D, 0xB7, 0xDC, 0x3F, 0xF3, 0x0C, 0xA7, 0xB7
+	}
+};
+
+static const struct {
+	EC_CURVE_DATA h;
+	unsigned char data[8 + 64 * 6];
+} _EC_BIGN_512V1 = {
+	{
+		NID_X9_62_prime_field, 8, 64, 1
+	},
+	{
+		/* seed */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x17, 0xAE,
+		/* p */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFD, 0xC7,
+		/* a */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFD, 0xC4,
+		/* b */
+		0x6C, 0xB4, 0x59, 0x44, 0x93, 0x3B, 0x8C, 0x43, 0xD8, 0x8C, 0x5D, 0x6A,
+		0x60, 0xFD, 0x58, 0x89, 0x5B, 0xC6, 0xA9, 0xEE, 0xDD, 0x5D, 0x25, 0x51,
+		0x17, 0xCE, 0x13, 0xE3, 0xDA, 0xAD, 0xB0, 0x88, 0x27, 0x11, 0xDC, 0xB5,
+		0xC4, 0x24, 0x5E, 0x95, 0x29, 0x33, 0x00, 0x8C, 0x87, 0xAC, 0xA2, 0x43,
+		0xEA, 0x86, 0x22, 0x27, 0x3A, 0x49, 0xA2, 0x7A, 0x09, 0x34, 0x69, 0x98,
+		0xD6, 0x13, 0x9C, 0x90,
+		/* x */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		/* y */
+		0xA8, 0x26, 0xFF, 0x7A, 0xE4, 0x03, 0x76, 0x81, 0xB1, 0x82, 0xE6, 0xF7,
+		0xA0, 0xD1, 0x8F, 0xAB, 0xB0, 0xAB, 0x41, 0xB3, 0xB3, 0x61, 0xBC, 0xE2,
+		0xD2, 0xED, 0xF8, 0x1B, 0x00, 0xCC, 0xCA, 0xDA, 0x69, 0x73, 0xDD, 0xE2,
+		0x0E, 0xFA, 0x6F, 0xD2, 0xFF, 0x77, 0x73, 0x95, 0xEE, 0xE8, 0x22, 0x61,
+		0x67, 0xAA, 0x83, 0xB9, 0xC9, 0x4C, 0x0D, 0x04, 0xB7, 0x92, 0xAE, 0x6F,
+		0xCE, 0xEF, 0xED, 0xBD,
+		/* order */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xB2, 0xC0, 0x09, 0x2C,
+		0x01, 0x98, 0x00, 0x4E, 0xF2, 0x6B, 0xEB, 0xB0, 0x2E, 0x21, 0x13, 0xF4,
+		0x36, 0x1B, 0xCA, 0xE5, 0x95, 0x56, 0xDF, 0x32, 0xDC, 0xFF, 0xAD, 0x49,
+		0x0D, 0x06, 0x8E, 0xF1
+	}
+};
+
+
+//---------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+static BIGN *bign_new_method(void)
+{
+	BIGN *ret = OPENSSL_zalloc(sizeof(*ret));
+	if (ret == NULL)
+	{
+		ECerr(BIGN_F_BIGN_NEW, ERR_R_MALLOC_FAILURE);
+		return NULL;
+	}
+
+	CRYPTO_REF_COUNT_set(&ret->references, 1);  // Безопасное присваивание (это специальный тип для подсчёта ссылок)
+	//ret->references = 1; - устарело с openssl 3.0
+	ret->lock = CRYPTO_THREAD_lock_new();
+	if (ret->lock == NULL)
+	{
+		ECerr(BIGN_F_BIGN_NEW, ERR_R_MALLOC_FAILURE);
+		OPENSSL_free(ret);
+		return NULL;
+	}
+
+	if (!CRYPTO_new_ex_data(CRYPTO_EX_INDEX_BIGN, ret, &ret->ex_data))
+		goto err;
+
+	return ret;
+
+err:
+	BIGN_free(ret);
+	return NULL;
+}
+
+BIGN *BIGN_new(const char *curve_name)
+{
+	BIGN *ret = bign_new_method();
+	if (ret == NULL)
+		return NULL;
+
+	if (curve_name)
+	{
+		int nid = OBJ_sn2nid(curve_name);
+		if (nid == NID_undef)
+			nid = OBJ_ln2nid(curve_name);
+
+		ret->group = EC_GROUP_new_by_curve_name(nid);
+		if (ret->group == NULL)
+		{
+			BIGN_free(ret);
+			return NULL;
+		}
+	}
+
+	return ret;
+}
+
+void BIGN_free(BIGN *bign)
+{
+	int i;
+
+	if (bign == NULL)
+		return;
+
+	
+	//CRYPTO_DOWN_REF(&bign->references, &i, bign->lock);  // Старый синтаксис 1.1.1. с тремя аргументами
+	// vld add
+	CRYPTO_DOWN_REF(&bign->references, &i);  // В OpenSSL 3.0+ убрали третий аргумент (lock), так как блокировки теперь обрабатываются внутри OpenSSL.
+	REF_PRINT_COUNT("BIGN", r);
+	if (i > 0)
+		return;
+	REF_ASSERT_ISNT(i < 0);
+
+	CRYPTO_free_ex_data(CRYPTO_EX_INDEX_BIGN, bign, &bign->ex_data);
+	CRYPTO_THREAD_lock_free(bign->lock);
+	EC_GROUP_free(bign->group);
+	EC_POINT_free(bign->pub_key);
+	BN_clear_free(bign->priv_key);
+
+	OPENSSL_clear_free((void *)bign, sizeof(BIGN));
+}
+
+int BIGN_up_ref(BIGN *r)
+{
+	int i;
+
+	//if (CRYPTO_UP_REF(&r->references, &i, r->lock) <= 0) // 1.1.1
+	if (CRYPTO_UP_REF(&r->references, &i) <= 0) // > 3.0
+		return 0;
+
+	REF_PRINT_COUNT("BIGN", r);
+	REF_ASSERT_ISNT(i < 2);
+	return ((i > 1) ? 1 : 0);
+}
+
+int BIGN_generate_key(BIGN *bign)
+{
+	BN_CTX *ctx = NULL;
+	BIGNUM *priv_key = NULL;
+	const BIGNUM *order = NULL;
+	EC_POINT *pub_key = NULL;
+	int ret = 1;
+
+	if (!(ctx = BN_CTX_new()))
+	{
+		BIGNerr(BIGN_F_BIGN_GENERATE_KEY, ERR_R_MALLOC_FAILURE);
+		goto err;
+	}
+
+	if (bign->priv_key == NULL)
+	{
+		if ((priv_key = BN_secure_new()) == NULL)
+		{
+			BIGNerr(BIGN_F_BIGN_GENERATE_KEY, ERR_R_MALLOC_FAILURE);
+			goto err;
+		}
+	}
+	else
+		priv_key = bign->priv_key;
+
+	order = EC_GROUP_get0_order(bign->group);
+	if (order == NULL)
+		goto err;
+
+	do
+		if (!BN_priv_rand_range(priv_key, order))
+			goto err;
+	while (BN_is_zero(priv_key));
+
+	if (bign->pub_key == NULL)
+	{
+		if ((pub_key = EC_POINT_new(bign->group)) == NULL)
+		{
+			BIGNerr(BIGN_F_BIGN_GENERATE_KEY, ERR_R_MALLOC_FAILURE);
+			goto err;
+		}
+	}
+	else
+		pub_key = bign->pub_key;
+
+	if (!EC_POINT_mul(bign->group, pub_key, priv_key, NULL, NULL, ctx))
+	{
+		BIGNerr(BIGN_F_BIGN_GENERATE_KEY, ERR_R_BIGN_LIB);
+		goto err;
+	}
+
+	bign->priv_key = priv_key;
+	bign->pub_key = pub_key;
+
+	ret = 0;
+
+err:
+	if (bign->pub_key == NULL)
+		EC_POINT_free(pub_key);
+	if (bign->priv_key != priv_key)
+		BN_free(priv_key);
+	BN_CTX_free(ctx);
+	return ret;
+}
+
+int BIGN_get_privkey(const BIGN *bign, unsigned char *privkey, unsigned int *privkey_len)
+{
+	int levelX2 = (EC_GROUP_order_bits(bign->group) + 7) / 8;
+
+	if (bign->priv_key == NULL)
+		return 1;
+
+	if (privkey)
+	{
+		if (!BN_bn2lebinpad(bign->priv_key, privkey, levelX2))
+		{
+			BIGNerr(BIGN_F_BIGN_GET_PRIVKEY, ERR_R_BIGN_LIB);
+			return 1;
+		}
+	}
+
+	if (privkey_len)
+		*privkey_len = levelX2;
+
+	return 0;
+}
+
+int BIGN_get_pubkey(const BIGN *bign, unsigned char *pubkey, unsigned int *pubkey_len)
+{
+	BN_CTX *ctx = NULL;
+	BIGNUM *x, *y;
+	int ret = 1;
+
+	int levelX2 = (EC_GROUP_order_bits(bign->group) + 7) / 8;
+
+	if (bign->pub_key == NULL)
+		goto err;
+
+	if (pubkey)
+	{
+		if (!(ctx = BN_CTX_new()))
+			goto err;
+
+		BN_CTX_start(ctx);
+		x = BN_CTX_get(ctx);
+		y = BN_CTX_get(ctx);
+		if (y == NULL)
+			goto err;
+
+		if (!EC_POINT_get_affine_coordinates(bign->group, bign->pub_key, x, y, ctx))
+		{
+			BIGNerr(BIGN_F_BIGN_GET_PRIVKEY, ERR_R_BIGN_LIB);
+			goto err;
+		}
+
+		if (!BN_bn2lebinpad(x, pubkey, levelX2) ||
+			!BN_bn2lebinpad(y, pubkey + levelX2, levelX2))
+		{
+			BIGNerr(BIGN_F_BIGN_GET_PRIVKEY, ERR_R_BIGN_LIB);
+			goto err;
+		}
+	}
+
+	if (pubkey_len)
+		*pubkey_len = levelX2 << 1;
+
+	ret = 0;
+
+err:
+	BN_CTX_end(ctx);
+	BN_CTX_free(ctx);
+
+	return ret;
+}
+
+int BIGN_gen_keypair(BIGN *bign,
+					 unsigned char *privkey, unsigned int *privkey_len,
+					 unsigned char *pubkey, unsigned int *pubkey_len)
+{
+	int ret = 1;
+
+	if (BIGN_generate_key(bign))
+		goto err;
+
+	if (BIGN_get_privkey(bign, privkey, privkey_len))
+		goto err;
+
+	if (BIGN_get_pubkey(bign, pubkey, pubkey_len))
+		goto err;
+
+	ret = 0;
+
+err:
+	return ret;
+}
+
+int BIGN_set_privkey(BIGN *bign, const unsigned char *privkey, unsigned int privkey_len)
+{
+	BN_CTX *ctx = NULL;
+	BIGNUM *priv_key = NULL;
+	const BIGNUM *order = NULL;
+	EC_POINT *pub_key = NULL;
+	int ret = 1;
+
+	int levelX2 = (EC_GROUP_order_bits(bign->group) + 7) / 8;
+	if ((int)privkey_len < levelX2)
+		return 1;
+
+	if (!(ctx = BN_CTX_new()))
+	{
+		BIGNerr(BIGN_F_BIGN_SET_PRIVKEY, ERR_R_MALLOC_FAILURE);
+		goto err;
+	}
+
+	if (bign->priv_key == NULL)
+	{
+		if ((priv_key = BN_secure_new()) == NULL)
+		{
+			BIGNerr(BIGN_F_BIGN_SET_PRIVKEY, ERR_R_MALLOC_FAILURE);
+			goto err;
+		}
+	}
+	else
+		priv_key = bign->priv_key;
+
+	order = EC_GROUP_get0_order(bign->group);
+	if (order == NULL || BN_is_zero(order))
+		goto err;
+
+	if (!BN_lebin2bn(privkey, levelX2, priv_key))
+		goto err;
+
+	if (bign->pub_key == NULL)
+	{
+		if ((pub_key = EC_POINT_new(bign->group)) == NULL)
+		{
+			BIGNerr(BIGN_F_BIGN_SET_PRIVKEY, ERR_R_MALLOC_FAILURE);
+			goto err;
+		}
+	}
+	else
+		pub_key = bign->pub_key;
+
+	if (!EC_POINT_mul(bign->group, pub_key, priv_key, NULL, NULL, ctx))
+	{
+		BIGNerr(BIGN_F_BIGN_SET_PRIVKEY, ERR_R_BIGN_LIB);
+		goto err;
+	}
+
+	bign->priv_key = priv_key;
+	bign->pub_key = pub_key;
+
+	ret = 0;
+
+err:
+	if (bign->pub_key == NULL)
+		EC_POINT_free(pub_key);
+	if (bign->priv_key != priv_key)
+		BN_free(priv_key);
+	BN_CTX_free(ctx);
+	return ret;
+}
+
+int bign_compute_key(const BIGN *bign, const EC_POINT *pub_key, unsigned char *out, size_t *out_len)
+{
+	BN_CTX *ctx = NULL;
+	BIGNUM *x_BN = NULL, *y_BN = NULL;
+	EC_POINT *tmp = NULL;
+	const BIGNUM *priv_key;
+	int ret = 1;
+
+	int levelX2 = (EC_GROUP_order_bits(bign->group) + 7) / 8;
+	*out_len = levelX2 << 1;
+	if (!out)
+		return 0;
+
+	if (!(ctx = BN_CTX_new()))
+		goto err;
+
+	BN_CTX_start(ctx);
+	x_BN = BN_CTX_get(ctx);
+	y_BN = BN_CTX_get(ctx);
+	if (y_BN == NULL)
+		goto err;
+
+	priv_key = bign->priv_key;
+	if (priv_key == NULL)
+		goto err;
+
+	if (!(tmp = EC_POINT_new(bign->group)))
+		goto err;
+
+	if (!EC_POINT_mul(bign->group, tmp, NULL, pub_key, priv_key, ctx))
+		goto err;
+
+	if (!EC_POINT_get_affine_coordinates(bign->group, tmp, x_BN, y_BN, ctx))
+		goto err;
+
+	if (!BN_bn2lebinpad(x_BN, out, levelX2) ||
+		!BN_bn2lebinpad(y_BN, out + levelX2, levelX2))
+		goto err;
+
+	ret = 0;
+
+err:
+	BN_CTX_end(ctx);
+	BN_CTX_free(ctx);
+
+	EC_POINT_free(tmp);
+
+	return ret;
+}
+
+int bign_set_public_key(BIGN *bign, const EC_POINT *pub_key)
+{
+	EC_POINT_free(bign->pub_key);
+	bign->pub_key = EC_POINT_dup(pub_key, bign->group);
+	return (bign->pub_key == NULL) ? 1 : 0;
+}
+
+int bign_check_pubkey_affine_coordinates(const BIGN *bign, BIGNUM *x, BIGNUM *y)
+{
+	BN_CTX *ctx = NULL;
+	BIGNUM *p_BN = NULL, *tx = NULL, *ty = NULL;
+	EC_POINT *point = NULL;
+	int ret = 1;
+
+	if (bign == NULL || bign->group == NULL || x == NULL || y == NULL)
+		return 1;
+
+	ctx = BN_CTX_new();
+	if (ctx == NULL)
+		return 1;
+
+	if (!(point = EC_POINT_new(bign->group)))
+		goto err;
+
+	BN_CTX_start(ctx);
+	p_BN = BN_CTX_get(ctx);
+	tx = BN_CTX_get(ctx);
+	ty = BN_CTX_get(ctx);
+	if (ty == NULL)
+		goto err;
+
+	if (!EC_POINT_set_affine_coordinates(bign->group, point, x, y, ctx))
+		goto err;
+	if (!EC_POINT_get_affine_coordinates(bign->group, point, tx, ty, ctx))
+		goto err;
+
+	if (!EC_GROUP_get_curve(bign->group, p_BN, NULL, NULL, ctx))
+		goto err;
+
+	/*
+     * Check if retrieved coordinates match originals and are less than field
+     * order: if not values are out of range.
+     */
+	if (BN_cmp(x, tx) || BN_cmp(y, ty) || (BN_cmp(x, p_BN) >= 0) || (BN_cmp(y, p_BN) >= 0))
+		goto err;
+
+	ret = 0;
+
+err:
+	BN_CTX_end(ctx);
+	BN_CTX_free(ctx);
+
+	EC_POINT_free(point);
+
+	return ret;
+}
+
+int BIGN_check_pubkey(BIGN *bign, const unsigned char *pubkey, unsigned int pubkey_len)
+{
+	BN_CTX *ctx = NULL;
+	BIGNUM *x_BN = NULL, *y_BN = NULL;
+	int ret = 1;
+
+	int levelX2 = (EC_GROUP_order_bits(bign->group) + 7) / 8;
+	if ((int)pubkey_len < levelX2)
+		return 1;
+
+	ctx = BN_CTX_new();
+	if (ctx == NULL)
+		goto err;
+
+	BN_CTX_start(ctx);
+	x_BN = BN_CTX_get(ctx);
+	y_BN = BN_CTX_get(ctx);
+	if (x_BN == NULL || y_BN == NULL)
+		goto err;
+
+	if (!BN_lebin2bn(pubkey, levelX2, x_BN) ||
+		!BN_lebin2bn(pubkey + levelX2, levelX2, y_BN))
+	{
+		BIGNerr(BIGN_F_BIGN_CHECK_PUBKEY, ERR_R_BIGN_LIB);
+		goto err;
+	}
+
+	if (bign_check_pubkey_affine_coordinates(bign, x_BN, y_BN))
+	{
+		BIGNerr(BIGN_F_BIGN_CHECK_PUBKEY, ERR_R_BIGN_LIB);
+		goto err;
+	}
+
+	ret = 0;
+
+err:
+	BN_CTX_end(ctx);
+	BN_CTX_free(ctx);
+
+	return ret;
+}
+
+int BIGN_set_pubkey(BIGN *bign, const unsigned char *pubkey, unsigned int pubkey_len)
+{
+	BN_CTX *ctx = NULL;
+	EC_POINT *point = NULL;
+	BIGNUM *x_BN, *y_BN;
+	int ret = 1;
+
+	int levelX2 = (EC_GROUP_order_bits(bign->group) + 7) / 8;
+	if ((int)pubkey_len < levelX2)
+		return 1;
+
+	ctx = BN_CTX_new();
+	if (ctx == NULL)
+		goto err;
+
+	if (!(point = EC_POINT_new(bign->group)))
+		goto err;
+
+	BN_CTX_start(ctx);
+	x_BN = BN_CTX_get(ctx);
+	y_BN = BN_CTX_get(ctx);
+	if (x_BN == NULL || y_BN == NULL)
+		goto err;
+
+	if (!BN_lebin2bn(pubkey, levelX2, x_BN) ||
+		!BN_lebin2bn(pubkey + levelX2, levelX2, y_BN))
+	{
+		BIGNerr(BIGN_F_BIGN_SET_PUBKEY, ERR_R_BIGN_LIB);
+		goto err;
+	}
+
+	if (bign_check_pubkey_affine_coordinates(bign, x_BN, y_BN))
+	{
+		BIGNerr(BIGN_F_BIGN_SET_PUBKEY, ERR_R_BIGN_LIB);
+		goto err;
+	}
+
+	if (!EC_POINT_set_affine_coordinates(bign->group, point, x_BN, y_BN, ctx))
+		goto err;
+
+	ret = bign_set_public_key(bign, point);
+
+err:
+	BN_CTX_end(ctx);
+	BN_CTX_free(ctx);
+
+	EC_POINT_free(point);
+
+	return ret;
+}

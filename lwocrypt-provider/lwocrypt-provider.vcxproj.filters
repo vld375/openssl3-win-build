@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations">
+      <UniqueIdentifier>{21e173f5-446d-436f-b499-8029bd915a9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\digests">
+      <UniqueIdentifier>{0b8f1761-9508-4c9b-b851-0e6d0757aebf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\ciphers">
+      <UniqueIdentifier>{bab0c6eb-4ce4-4bdd-b723-8f84f4091993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\macs">
+      <UniqueIdentifier>{b9b973d1-9233-4ff3-b4f3-0f91426e4eee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\commom">
+      <UniqueIdentifier>{44c1fbeb-7d87-4666-8442-f05f5d993d9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\crypto">
+      <UniqueIdentifier>{d5d9df2e-d5c8-4cad-825d-9ce7b0db6c49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\signature">
+      <UniqueIdentifier>{8bf64c02-00ad-4143-8aa0-3591bf91cbf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\keymgmt">
+      <UniqueIdentifier>{4d3c0200-d5eb-4e43-a72e-db1f483a8ee1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\rand">
+      <UniqueIdentifier>{f35e8afb-c125-445d-891f-2efd230eba7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\encoders">
+      <UniqueIdentifier>{97a5a611-f263-42cd-840a-e05e272aa499}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\implementations\decoders">
+      <UniqueIdentifier>{bd474ffe-e3a8-43d6-b6c0-c8507138a3bc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+    <None Include="..\README TEST.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="implementations\ciphers\ciphercommon_local.h">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\bio.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\cipher_belt.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon_aead.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon_ccm.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon_gcm.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\digestcommon.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\implementations.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\kdfexchange.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\macsignature.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\names.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\proverr.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\provider_ctx.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\provider_util.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\providercommon.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\securitycheck.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\seeding.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\lwocrypt_prov_main.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\lwocrypt-prov.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\bign_keymgmt_prov.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\bign_encoders_prov.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-provider\bign_decoders_prov.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lwocrypt_prov_main.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="prov_running.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\digests\bash_prov.c">
+      <Filter>Исходные файлы\implementations\digests</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\digests\belt_prov.c">
+      <Filter>Исходные файлы\implementations\digests</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\digests\digestcommon.c">
+      <Filter>Исходные файлы\implementations\digests</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\macs\mac_prov.c">
+      <Filter>Исходные файлы\implementations\macs</Filter>
+    </ClCompile>
+    <ClCompile Include="common\bio_prov.c">
+      <Filter>Исходные файлы\commom</Filter>
+    </ClCompile>
+    <ClCompile Include="common\provider_ctx.c">
+      <Filter>Исходные файлы\commom</Filter>
+    </ClCompile>
+    <ClCompile Include="common\provider_err.c">
+      <Filter>Исходные файлы\commom</Filter>
+    </ClCompile>
+    <ClCompile Include="common\provider_seeding.c">
+      <Filter>Исходные файлы\commom</Filter>
+    </ClCompile>
+    <ClCompile Include="common\provider_util.c">
+      <Filter>Исходные файлы\commom</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\cipher_belt.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon_block.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon_ccm.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon_ccm_hw.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon_gcm.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon_gcm_hw.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\ciphercommon_hw.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\ciphers\cipher_belt_hw.c">
+      <Filter>Исходные файлы\implementations\ciphers</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\signature\bign_signature_prov.c">
+      <Filter>Исходные файлы\implementations\signature</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\keymgmt\bign_keymgmt_prov.c">
+      <Filter>Исходные файлы\implementations\keymgmt</Filter>
+    </ClCompile>
+    <ClCompile Include="lwocrypt_rands_prov.c">
+      <Filter>Исходные файлы\implementations\rand</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\encoders\bign_encoders_prov.c">
+      <Filter>Исходные файлы\implementations\encoders</Filter>
+    </ClCompile>
+    <ClCompile Include="implementations\decoders\bign_decoders_prov.c">
+      <Filter>Исходные файлы\implementations\decoders</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\OIDs.txt" />
+  </ItemGroup>
+</Project>

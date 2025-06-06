@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Исходные файлы\bash">
+      <UniqueIdentifier>{e196be4b-d801-48dd-bf87-5f62ad2eef6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\belt">
+      <UniqueIdentifier>{ad2a3965-100e-429d-a565-e5760fdf4450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\brng">
+      <UniqueIdentifier>{d21d2a44-e260-42b0-b151-661b07dd7fee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\bign">
+      <UniqueIdentifier>{7f372761-a81f-4b83-b8c0-73b5aac9d725}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bash\bash_dgst.c">
+      <Filter>Исходные файлы\bash</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_add.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="bash\bash_one.c">
+      <Filter>Исходные файлы\bash</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_cbc.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_cfb.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_ctr.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_ecb.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_bde.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_dwp.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_kwp.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_mac.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_sde.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+    <ClCompile Include="brng\brng_ctr_hbelt.c">
+      <Filter>Исходные файлы\brng</Filter>
+    </ClCompile>
+    <ClCompile Include="brng\hmac_hbelt.c">
+      <Filter>Исходные файлы\brng</Filter>
+    </ClCompile>
+    <ClCompile Include="bign\bign.c">
+      <Filter>Исходные файлы\bign</Filter>
+    </ClCompile>
+    <ClCompile Include="bign\bign_asn1.c">
+      <Filter>Исходные файлы\bign</Filter>
+    </ClCompile>
+    <ClCompile Include="bign\bign_key.c">
+      <Filter>Исходные файлы\bign</Filter>
+    </ClCompile>
+    <ClCompile Include="bign\bign_sign.c">
+      <Filter>Исходные файлы\bign</Filter>
+    </ClCompile>
+    <ClCompile Include="bign\bign_token.c">
+      <Filter>Исходные файлы\bign</Filter>
+    </ClCompile>
+    <ClCompile Include="bign\bign_err.c">
+      <Filter>Исходные файлы\bign</Filter>
+    </ClCompile>
+    <ClCompile Include="belt\belt_dgst.c">
+      <Filter>Исходные файлы\belt</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\lwocrypt-alg\bake.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\bash.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\bels.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\belt.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\bign.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\bign_local.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\bignerr.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\brng.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\lwocrypt-alg\btok.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -18,6 +18,7 @@
 
 // Helper function to create an EVP_PKEY from BIGN_KEYMGMT_KEY
 // This encapsulates the common logic for both DER and PEM encoders
+
 static EVP_PKEY* bign_keymgmt_to_evp_pkey(const BIGN_KEYMGMT_KEY* key, OSSL_LIB_CTX* libctx) {
     fprintf(stderr, "bign_keymgmt_to_evp_pkey: start \n");
     EVP_PKEY* encode_pkey = NULL;
@@ -144,6 +145,7 @@ void* ossl_bign_encoder_newctx(void* provctx_arg) {
     }
     ctx->libctx = provctx->libctx;
     ctx->provctx = provctx; // Set the provctx
+    fprintf(stderr, "ossl_bign_encoder_newctx: end\n");
     return ctx;
 }
 

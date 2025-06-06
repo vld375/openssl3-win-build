@@ -21,7 +21,9 @@
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
-
+#include <openssl/pkcs12.h>
+#include <openssl/asn1t.h>
+#include <openssl/x509.h>
 
 #include <lwocrypt-provider/names.h>
 #include <lwocrypt-provider/implementations.h>

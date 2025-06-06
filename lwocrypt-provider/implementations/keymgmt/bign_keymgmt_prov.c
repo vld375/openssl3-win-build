@@ -700,17 +700,24 @@ static int ossl_bign_keymgmt_export(const void* keydata, int selection,
     }
 
     if ((selection & OSSL_KEYMGMT_SELECT_PRIVATE_KEY) != 0 && key->priv_key != NULL) {
-        size_t priv_key_byte_len = BN_num_bytes(key->priv_key);
-        // BN_bn2binpad pads to a fixed size, so we use the buffer size as the actual length
-        // or the specific size if it's less. For EC private keys, it's often the curve size.
-        // Let's use the size of the buffer which corresponds to max possible BIGNUM size.
-        if (BN_bn2binpad(key->priv_key, priv_buf, sizeof(priv_buf)) <= 0) {
-            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB); // Or specific error
+        // Calculate the actual byte length of the private key BIGNUM
+        size_t priv_key_actual_len = BN_num_bytes(key->priv_key);
+
+        // Ensure priv_buf is large enough to hold the actual key.
+        // Your priv_buf[66] is fine for 512-bit keys (max 64 bytes).
+        // Use BN_bn2binpad to write the BIGNUM into the buffer.
+        // The length argument to BN_bn2binpad is the target buffer size.
+        // The return value is the number of bytes written, which should be priv_key_actual_len
+        // or a padded length if priv_key_actual_len < sizeof(priv_buf)
+        if (BN_bn2binpad(key->priv_key, priv_buf, priv_key_actual_len) <= 0) {
+            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
             return 0;
         }
 
-        params[param_n++] = OSSL_PARAM_construct_BN( // OSSL_PARAM_BN implies length is BN_num_bytes
-            OSSL_PKEY_PARAM_PRIV_KEY, priv_buf, sizeof(priv_buf)); // Using BN_num_bytes might be better here
+        // Use OSSL_PARAM_construct_octet_string for the binary representation of the BIGNUM
+        // The length should be the actual length of the BIGNUM data.
+        params[param_n++] = OSSL_PARAM_construct_octet_string(
+            OSSL_PKEY_PARAM_PRIV_KEY, priv_buf, priv_key_actual_len);
     }
 
     params[param_n] = OSSL_PARAM_construct_end();

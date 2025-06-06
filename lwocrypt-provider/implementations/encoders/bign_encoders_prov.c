@@ -4,133 +4,221 @@
 #include <openssl/core_dispatch.h>
 #include <openssl/core_names.h>
 #include <openssl/params.h>
+#include <openssl/param_build.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/evperr.h>
 #include <openssl/bio.h>
 #include <lwocrypt-provider/bign_keymgmt_prov.h>
 #include <lwocrypt-provider/lwocrypt_prov_main.h>
 #include <lwocrypt-provider/bign_encoders_prov.h>
+#include <openssl/objects.h> // Для OBJ_nid2sn (если используется в export)
+
+// -- - Прототип вашей функции экспорта из bign_keymgmt_prov.c-- -
+// Убедитесь, что этот прототип доступен (например, через bign_keymgmt_prov.h)
+extern int ossl_bign_keymgmt_export(const void* keydata, int selection,
+    OSSL_CALLBACK* cb, void* cbarg);
 
 
-// Helper function to create an EVP_PKEY from BIGN_KEYMGMT_KEY
-// This encapsulates the common logic for both DER and PEM encoders
+// -- - Вспомогательная функция для сбора параметров из ossl_bign_keymgmt_export-- -
+// Используется как колбэк для OSSL_CALLBACK.
+static int export_to_param_bld_cb(const OSSL_PARAM params[], void* arg) {
+    OSSL_PARAM_BLD* bld = (OSSL_PARAM_BLD*)arg;
 
-static EVP_PKEY* bign_keymgmt_to_evp_pkey(const BIGN_KEYMGMT_KEY* key, OSSL_LIB_CTX* libctx) {
-    fprintf(stderr, "bign_keymgmt_to_evp_pkey: start \n");
-    EVP_PKEY* encode_pkey = NULL;
-    EVP_PKEY_CTX* pctx = NULL;
-    int ret = 0; // Failure by default
-
-    if (!key || !key->group || !libctx) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: key or key->group or libctx is NULL \n");
-        ERR_raise(ERR_LIB_EVP, EVP_R_INVALID_KEY);
-        return NULL;
+    if (!bld) {
+        ERR_raise(ERR_LIB_EVP, ERR_R_PASSED_NULL_PARAMETER);
+        return 0;
     }
 
-    encode_pkey = EVP_PKEY_new();
-    if (!encode_pkey) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: EVP_PKEY_new() error \n");
-        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
-        return NULL;
-    }
-
-    // Create a PKEY_CTX for EC parameters and initialize it
-    pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, libctx);
-    if (!pctx) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: Failed to create EVP_PKEY_CTX\n");
-        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
-        goto err;
-    }
-    if (EVP_PKEY_paramgen_init(pctx) <= 0) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: EVP_PKEY_paramgen_init failed\n");
-        ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-        goto err;
-    }
-    if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(pctx, key->nid) <= 0) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: EVP_PKEY_CTX_set_ec_paramgen_curve_nid failed for NID %d\n", key->nid);
-        ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-        goto err;
-    }
-    if (EVP_PKEY_paramgen(pctx, &encode_pkey) <= 0) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: EVP_PKEY_paramgen failed\n");
-        ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-        goto err;
-    }
-    fprintf(stderr, "bign_keymgmt_to_evp_pkey: Successfully generated parameters for EVP_PKEY\n");
-
-
-
-
-
-
-
-
-    // Set the private key (if present)
-    if (key->priv_key) {
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: Attempting to set private key...\n");
-        OSSL_PARAM priv_param[] = {
-            OSSL_PARAM_BN(OSSL_PKEY_PARAM_PRIV_KEY, key->priv_key, 0),
-            OSSL_PARAM_END
-        };
-        if (EVP_PKEY_set_params(encode_pkey, priv_param) <= 0) {
-            fprintf(stderr, "bign_keymgmt_to_evp_pkey: Failed to set private key params\n");
-            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-            goto err;
-        }
-        fprintf(stderr, "bign_keymgmt_to_evp_pkey: Private key params set successfully.\n");
-    }
-
-    // Set the public key (if present)
-    if (key->pub_key) {
-        unsigned char* pub_buf = NULL;
-        size_t pub_len = 0;
-        int pt_conversion = POINT_CONVERSION_UNCOMPRESSED;
-
-        pub_len = EC_POINT_point2oct(key->group, key->pub_key, pt_conversion, NULL, 0, NULL);
-        if (pub_len == 0) {
-            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-            goto err;
+    for (const OSSL_PARAM* p = params; p->key != NULL; ++p) {
+        int push_ok = 0;
+        switch (p->data_type) {
+        case OSSL_PARAM_INTEGER:
+            // Assuming integer types are passed as int64_t for OSSL_PARAM_BLD_push_int64
+            // You might need to adjust this based on the specific integer types your params use.
+            // For instance, if you use OSSL_PARAM_uint32 in export, use OSSL_PARAM_BLD_push_uint32
+            // For this example, I'll use int64/uint64 as common catch-alls
+            if (p->data_size == sizeof(int32_t)) {
+                push_ok = OSSL_PARAM_BLD_push_int32(bld, p->key, *(const int32_t*)p->data);
+            }
+            else if (p->data_size == sizeof(int64_t)) {
+                push_ok = OSSL_PARAM_BLD_push_int64(bld, p->key, *(const int64_t*)p->data);
+            }
+            else {
+                // Handle other integer sizes or raise error
+                ERR_raise(ERR_LIB_EVP, ERR_R_PASSED_INVALID_ARGUMENT);
+                return 0;
+            }
+            break;
+        case OSSL_PARAM_UNSIGNED_INTEGER:
+            if (p->data_size == sizeof(uint32_t)) {
+                push_ok = OSSL_PARAM_BLD_push_uint32(bld, p->key, *(const uint32_t*)p->data);
+            }
+            else if (p->data_size == sizeof(uint64_t)) {
+                push_ok = OSSL_PARAM_BLD_push_uint64(bld, p->key, *(const uint64_t*)p->data);
+            }
+            else {
+                // This case handles BIGNUM as an unsigned integer if it's not a direct BN pointer
+                // If your private key or other BIGNUMs are exported as OSSL_PARAM_UNSIGNED_INTEGER
+                // with raw bytes (like OSSL_PARAM_construct_BN does), this is the correct path.
+                // However, it's safer to use OSSL_PARAM_BLD_push_octet_string for raw bytes
+                // or OSSL_PARAM_BLD_push_BN if 'p->data' points to a BIGNUM*
+                // Assuming your ossl_bign_keymgmt_export uses OSSL_PARAM_construct_BN which
+                // makes it an OSSL_PARAM_UNSIGNED_INTEGER, but with data as unsigned char*.
+                // This is where OSSL_PARAM_BLD_push_BN_pad or OSSL_PARAM_BLD_push_octet_string would be better.
+                // For now, let's assume it's meant to be treated as raw bytes for the BN type.
+                push_ok = OSSL_PARAM_BLD_push_octet_string(bld, p->key, p->data, p->data_size);
+            }
+            break;
+        case OSSL_PARAM_UTF8_STRING:
+            // Assuming p->data points to the string and p->data_size is its length
+            // Use 0 for bsize to let OSSL_PARAM_BLD_push_utf8_string duplicate the string
+            push_ok = OSSL_PARAM_BLD_push_utf8_string(bld, p->key, (const char*)p->data, 0);
+            break;
+        case OSSL_PARAM_OCTET_STRING:
+            // p->data is the byte array, p->data_size is its length
+            push_ok = OSSL_PARAM_BLD_push_octet_string(bld, p->key, p->data, p->data_size);
+            break;
+            // Add other OSSL_PARAM_BLD_push_ functions for other types if your export sends them
+            // case OSSL_PARAM_REAL: // For doubles
+            //     push_ok = OSSL_PARAM_BLD_push_double(bld, p->key, *(const double*)p->data);
+            //     break;
+        default:
+            // Handle unsupported parameter types
+            ERR_raise(ERR_LIB_EVP, ERR_R_PASSED_INVALID_ARGUMENT); // Use a relevant error
+            return 0;
         }
 
-        pub_buf = OPENSSL_malloc(pub_len);
-        if (!pub_buf) {
+        if (!push_ok) {
+            // Error pushing parameter (e.g., malloc failure)
             ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
-            goto err;
+            return 0;
         }
-
-        if (EC_POINT_point2oct(key->group, key->pub_key, pt_conversion, pub_buf, pub_len, NULL) != pub_len) {
-            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-            OPENSSL_free(pub_buf);
-            goto err;
-        }
-
-        OSSL_PARAM pub_param[] = {
-            OSSL_PARAM_octet_string(OSSL_PKEY_PARAM_PUB_KEY, pub_buf, pub_len),
-            OSSL_PARAM_END
-        };
-        if (EVP_PKEY_set_params(encode_pkey, pub_param) <= 0) {
-            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
-            OPENSSL_free(pub_buf);
-            goto err;
-        }
-        OPENSSL_free(pub_buf);
     }
-
-    ret = 1; // Success
-err:
-    EVP_PKEY_CTX_free(pctx);
-    if (!ret) {
-        EVP_PKEY_free(encode_pkey);
-        encode_pkey = NULL;
-    }
-    fprintf(stderr, "bign_keymgmt_to_evp_pkey: end \n");
-    return encode_pkey;
+    return 1; // Success
 }
 
+// --- ФИНАЛЬНАЯ РЕАЛИЗАЦИЯ bign_keymgmt_to_evp_pkey ---
+// Функция для создания стандартного EVP_PKEY из внутренней структуры BIGN_KEYMGMT_KEY.
+static EVP_PKEY* bign_keymgmt_to_evp_pkey(const BIGN_KEYMGMT_KEY* key_ctx, OSSL_LIB_CTX* libctx) {
+    EVP_PKEY* pkey = NULL;
+    EVP_PKEY_CTX* pctx = NULL;
+    OSSL_PARAM_BLD* bld = NULL;
+    OSSL_PARAM* params = NULL;
+    int ret = 0; // По умолчанию - неудача
+
+    fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: Начинаю конвертацию BIGN_KEYMGMT_KEY в EVP_PKEY.\n");
+
+    // Проверка входных параметров
+    if (!key_ctx || !key_ctx->provctx || key_ctx->nid == NID_undef || !libctx) {
+        ERR_raise(ERR_LIB_EVP, ERR_R_PASSED_NULL_PARAMETER);
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: Некорректные параметры: key_ctx, provctx, NID или libctx NULL.\n");
+        return NULL;
+    }
+
+    // 1. Создаем OSSL_PARAM_BLD для сбора экспортируемых параметров
+    bld = OSSL_PARAM_BLD_new();
+    if (!bld) {
+        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: OSSL_PARAM_BLD_new не удался.\n");
+        goto err;
+    }
+
+    // 2. Вызываем вашу функцию экспорта для заполнения OSSL_PARAM_BLD
+    // Мы хотим экспортировать параметры домена, публичный ключ и приватный ключ.
+    // Если приватный ключ отсутствует, экспорт публичного все равно сработает.
+    int selection = OSSL_KEYMGMT_SELECT_ALL_PARAMETERS; // Включает domain, pub, priv
+    if (!ossl_bign_keymgmt_export(key_ctx, selection, export_to_param_bld_cb, bld)) {
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: ossl_bign_keymgmt_export не удался.\n");
+        // Ошибка уже должна быть поднята в ossl_bign_keymgmt_export
+        goto err;
+    }
+
+    // 3. Конвертируем OSSL_PARAM_BLD в массив OSSL_PARAM
+    params = OSSL_PARAM_BLD_to_param(bld);
+    if (!params) {
+        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: OSSL_PARAM_BLD_to_param не удался.\n");
+        goto err;
+    }
+
+#ifdef DEBUG_PRINT_PARAMS
+    // Отладочный вывод параметров, используемых для fromdata
+    fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: Параметры для EVP_PKEY_fromdata:\n");
+    for (const OSSL_PARAM* p = params; p->key != NULL; ++p) {
+        fprintf(stderr, "  - %s: type %d", p->key, p->data_type);
+        if (p->data_type == OSSL_PARAM_UTF8_STRING) {
+            fprintf(stderr, ", Value: \"%s\"\n", (char*)p->data);
+        }
+        else if (p->data_type == OSSL_PARAM_OCTET_STRING) {
+            fprintf(stderr, ", Value: (octet string, len %zu)\n", p->data_size);
+        }
+        else if (p->data_type == OSSL_PARAM_BN) {
+            BIGNUM* bn_temp = BN_bin2bn((const unsigned char*)p->data, p->data_size, NULL);
+            if (bn_temp) {
+                char* hex_str = BN_bn2hex(bn_temp);
+                fprintf(stderr, ", Value (hex): %s\n", hex_str);
+                OPENSSL_free(hex_str);
+                BN_free(bn_temp);
+            }
+            else {
+                fprintf(stderr, ", Value: (BN, conversion failed)\n");
+            }
+        }
+        else {
+            fprintf(stderr, "\n");
+        }
+    }
+#endif // DEBUG_PRINT_PARAMS
+
+    // 4. Создаем EVP_PKEY_CTX для типа ключа EC.
+    // Это указывает OpenSSL использовать реализацию управления ключами для стандартных EC-ключей
+    // (это может быть ваша реализация, если вы зарегистрировали ваш провайдер для EVP_PKEY_EC,
+    // или реализация EC по умолчанию от OpenSSL).
+    pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, libctx);
+    if (!pctx) {
+        ERR_raise(ERR_LIB_EVP, ERR_R_MALLOC_FAILURE);
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: Не удалось создать EVP_PKEY_CTX для EVP_PKEY_EC.\n");
+        goto err;
+    }
+    fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: EVP_PKEY_CTX создан для EVP_PKEY_EC.\n");
+
+    // 5. Инициализируем операцию fromdata
+    if (EVP_PKEY_fromdata_init(pctx) <= 0) {
+        ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: EVP_PKEY_fromdata_init не удался.\n");
+        goto err;
+    }
+    fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: EVP_PKEY_fromdata_init успешно завершен.\n");
+
+    // 6. Создаем EVP_PKEY из собранных параметров.
+    // EVP_PKEY_KEYPAIR означает, что мы создаем пару ключей (приватный + публичный).
+    if (EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
+        ERR_raise(ERR_LIB_EVP, EVP_R_DECODE_ERROR); // Ошибка декодирования или построения ключа
+        fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: EVP_PKEY_fromdata не удался: %s\n", ERR_error_string(ERR_get_error(), NULL));
+        goto err;
+    }
+    fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: EVP_PKEY_fromdata успешно завершен, pkey=%p.\n", (void*)pkey);
+
+    ret = 1; // Успех
+
+err:
+    // Очистка ресурсов
+    OSSL_PARAM_free(params); // Освобождаем массив параметров
+    OSSL_PARAM_BLD_free(bld); // Освобождаем строитель параметров
+    EVP_PKEY_CTX_free(pctx); // Освобождаем контекст EVP_PKEY_CTX
+    if (!ret) {
+        // Если была ошибка, освобождаем EVP_PKEY, если он был выделен
+        EVP_PKEY_free(pkey);
+        pkey = NULL;
+    }
+    fprintf(stderr, "DEBUG: bign_keymgmt_to_evp_pkey: Завершение. ret=%d\n", ret);
+    return pkey;
+}
 
 
 

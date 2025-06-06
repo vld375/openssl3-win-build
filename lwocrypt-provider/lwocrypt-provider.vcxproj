@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{32e468c1-f2be-4d4b-bb1f-7367bd6c354b}</ProjectGuid>
+    <RootNamespace>lwocryptprovider</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>lwocrypt-provider</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>lwocrypt</TargetName>
+    <OutDir>$(SolutionDir)Windows\compile\$(Configuration)32\</OutDir>
+    <IntDir>$(SolutionDir)Windows\build\$(Configuration)32\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>lwocrypt</TargetName>
+    <OutDir>$(SolutionDir)Windows\compile\$(Configuration)32\</OutDir>
+    <IntDir>$(SolutionDir)Windows\build\$(Configuration)32\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>lwocrypt</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Windows\build\$(Configuration)64\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>lwocrypt</TargetName>
+    <OutDir>$(SolutionDir)Windows\compile\$(Configuration)64\</OutDir>
+    <IntDir>$(SolutionDir)Windows\build\$(Configuration)64\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;LWOCRYPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)include\;$(SolutionDir)include\providers\implementations\include;$(SolutionDir)include\providers\common\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lwocrypt-algo.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)include\lib\;$(SolutionDir)Windows\compile\$(Configuration)32\</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;LWOCRYPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)include\;$(SolutionDir)include\providers\implementations\include;$(SolutionDir)include\providers\common\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>$(SolutionDir)include\lib\;$(SolutionDir)Windows\compile\$(Configuration)32\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lwocrypt-algo.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;LWOCRYPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lwocrypt-algo.lib;libcrypto-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)include\lib\;$(SolutionDir)Windows\compile\$(Configuration)64\;$(SolutionDir)x64\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;LWOCRYPT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>lwocrypt-algo.lib;libcrypto64MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)include\lib\;$(SolutionDir)Windows\compile\$(Configuration)64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\README TEST.md" />
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\lwocrypt-provider\bign_decoders_prov.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\bign_keymgmt_prov.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\bio.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon_aead.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon_ccm.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\ciphercommon_gcm.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\cipher_belt.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\digestcommon.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\bign_encoders_prov.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\implementations.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\kdfexchange.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\lwocrypt-prov.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\lwocrypt_prov_main.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\macsignature.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\names.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\proverr.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\providercommon.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\provider_ctx.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\provider_util.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\securitycheck.h" />
+    <ClInclude Include="..\include\lwocrypt-provider\seeding.h" />
+    <ClInclude Include="implementations\ciphers\ciphercommon_local.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="common\bio_prov.c" />
+    <ClCompile Include="common\provider_ctx.c" />
+    <ClCompile Include="common\provider_err.c" />
+    <ClCompile Include="common\provider_seeding.c" />
+    <ClCompile Include="common\provider_util.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon_block.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon_ccm.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon_ccm_hw.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon_gcm.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon_gcm_hw.c" />
+    <ClCompile Include="implementations\ciphers\ciphercommon_hw.c" />
+    <ClCompile Include="implementations\ciphers\cipher_belt.c" />
+    <ClCompile Include="implementations\ciphers\cipher_belt_hw.c" />
+    <ClCompile Include="implementations\decoders\bign_decoders_prov.c" />
+    <ClCompile Include="implementations\digests\bash_prov.c" />
+    <ClCompile Include="implementations\digests\belt_prov.c" />
+    <ClCompile Include="implementations\digests\digestcommon.c" />
+    <ClCompile Include="implementations\encoders\bign_encoders_prov.c" />
+    <ClCompile Include="implementations\keymgmt\bign_keymgmt_prov.c" />
+    <ClCompile Include="implementations\macs\mac_prov.c" />
+    <ClCompile Include="implementations\signature\bign_signature_prov.c" />
+    <ClCompile Include="lwocrypt_prov_main.c" />
+    <ClCompile Include="lwocrypt_rands_prov.c" />
+    <ClCompile Include="prov_running.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\OIDs.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

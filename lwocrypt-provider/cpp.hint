@@ -1,0 +1,2 @@
+#define LWOCRYPTPROVIDER_API __declspec(dllexport)
+#define LWOCRYPTPROVIDER_API __declspec(dllimport)

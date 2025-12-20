@@ -71,7 +71,7 @@
               "Title": "Microsoft.CppCommon.targets",
               "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Microsoft\\VC\\v170\\Microsoft.CppCommon.targets",
               "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Microsoft\\VC\\v170\\Microsoft.CppCommon.targets",
-              "ViewState": "AgIAACkAAAAAAAAAAAAQwDAAAABSAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
               "WhenOpened": "2025-12-20T10:52:05.285Z",
               "EditorCaption": ""
@@ -134,8 +134,7 @@
               "RelativeToolTip": "..\\include\\openssl\\obj_mac.h",
               "ViewState": "AgIAAOAZAAAAAAAAAAAAAOwZAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-12-18T12:35:56.014Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-18T12:35:56.014Z"
             },
             {
               "$type": "Document",

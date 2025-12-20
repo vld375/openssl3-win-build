@@ -1,0 +1,246 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\build-VS2022\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_cert_table.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\objects\\objects.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\objects\\obj_mac.num||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E068827-5CD6-4648-98DD-B0417F0B9DDC}|libssl-3\\libssl-3.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_ciph.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E068827-5CD6-4648-98DD-B0417F0B9DDC}|libssl-3\\libssl-3.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\s3_lib.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E068827-5CD6-4648-98DD-B0417F0B9DDC}|libssl-3\\libssl-3.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\t1_lib.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E068827-5CD6-4648-98DD-B0417F0B9DDC}|libssl-3\\libssl-3.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_cert.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1E068827-5CD6-4648-98DD-B0417F0B9DDC}|libssl-3\\libssl-3.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\t1_enc.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{625D49F1-BC00-4C36-AE25-2F408B208B08}|_prebuild\\_prebuild.vcxproj|D:\\PRJ\\LWOCRYPT_PROV\\OPENSSL3-WIN-BUILD\\INCLUDE\\OPENSSL\\TYPES.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{625D49F1-BC00-4C36-AE25-2F408B208B08}|_prebuild\\_prebuild.vcxproj|D:\\PRJ\\LWOCRYPT_PROV\\OPENSSL3-WIN-BUILD\\INCLUDE\\OPENSSL\\OBJ_MAC.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A034922E-00AC-115A-8D86-06C7691A871D}|C:\\Users\\kozlovsky_v\\AppData\\Roaming\\Microsoft\\VisualStudio\\17.0_ffbee156\\SingleFileISense\\_sfi_28cda337-7ec1-4e34-be19-66b819a11725_.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\crypto\\objects.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{625D49F1-BC00-4C36-AE25-2F408B208B08}|_prebuild\\_prebuild.vcxproj|D:\\PRJ\\LWOCRYPT_PROV\\OPENSSL3-WIN-BUILD\\INCLUDE\\OPENSSL\\SSL.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{625D49F1-BC00-4C36-AE25-2F408B208B08}|_prebuild\\_prebuild.vcxproj|D:\\PRJ\\LWOCRYPT_PROV\\OPENSSL3-WIN-BUILD\\INCLUDE\\OPENSSL\\TLS1.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_local.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 6,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{74946827-37a0-11d2-a273-00c04f8ef4ff}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{fbcae063-e2c0-4ab1-a516-996ea3dafb72}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "objects.txt",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\objects\\objects.txt",
+              "RelativeDocumentMoniker": "..\\crypto\\objects\\objects.txt",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\objects\\objects.txt",
+              "RelativeToolTip": "..\\crypto\\objects\\objects.txt",
+              "ViewState": "AgIAAMcHAAAAAAAAAAAAANAHAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-12-19T13:38:27.501Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "obj_mac.num",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\objects\\obj_mac.num",
+              "RelativeDocumentMoniker": "..\\crypto\\objects\\obj_mac.num",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\objects\\obj_mac.num",
+              "RelativeToolTip": "..\\crypto\\objects\\obj_mac.num",
+              "ViewState": "AgIAANQFAAAAAAAAAAAAANwFAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-12-19T13:38:27.44Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "types.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\types.h",
+              "RelativeDocumentMoniker": "..\\include\\openssl\\types.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\types.h",
+              "RelativeToolTip": "..\\include\\openssl\\types.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-19T10:23:15.015Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ssl_cert_table.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_cert_table.h",
+              "RelativeDocumentMoniker": "..\\ssl\\ssl_cert_table.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_cert_table.h",
+              "RelativeToolTip": "..\\ssl\\ssl_cert_table.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-18T12:05:09.895Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "obj_mac.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\obj_mac.h",
+              "RelativeDocumentMoniker": "..\\include\\openssl\\obj_mac.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\obj_mac.h",
+              "RelativeToolTip": "..\\include\\openssl\\obj_mac.h",
+              "ViewState": "AgIAABUaAAAAAAAAAAAAABcaAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-18T12:35:56.014Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "objects.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\crypto\\objects.h",
+              "RelativeDocumentMoniker": "..\\include\\crypto\\objects.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\crypto\\objects.h",
+              "RelativeToolTip": "..\\include\\crypto\\objects.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-18T12:34:18.364Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ssl_cert.c",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_cert.c",
+              "RelativeDocumentMoniker": "..\\ssl\\ssl_cert.c",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_cert.c",
+              "RelativeToolTip": "..\\ssl\\ssl_cert.c",
+              "ViewState": "AgIAAE8FAAAAAAAAAAAAAFkFAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-12-18T12:04:22.15Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "ssl.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\ssl.h",
+              "RelativeDocumentMoniker": "..\\include\\openssl\\ssl.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\ssl.h",
+              "RelativeToolTip": "..\\include\\openssl\\ssl.h",
+              "ViewState": "AgIAABwKAAAAAAAAAAAMwCQKAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-16T15:47:38.58Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "t1_enc.c",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\t1_enc.c",
+              "RelativeDocumentMoniker": "..\\ssl\\t1_enc.c",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\t1_enc.c",
+              "RelativeToolTip": "..\\ssl\\t1_enc.c",
+              "ViewState": "AgIAAEACAAAAAAAAAAAAAEgCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-12-16T14:46:28.256Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "tls1.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\tls1.h",
+              "RelativeDocumentMoniker": "..\\include\\openssl\\tls1.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\include\\openssl\\tls1.h",
+              "RelativeToolTip": "..\\include\\openssl\\tls1.h",
+              "ViewState": "AgIAAI4CAAAAAAAAAAAAAJgCAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-16T11:41:32.96Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "s3_lib.c",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\s3_lib.c",
+              "RelativeDocumentMoniker": "..\\ssl\\s3_lib.c",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\s3_lib.c",
+              "RelativeToolTip": "..\\ssl\\s3_lib.c",
+              "ViewState": "AgIAAOMQAAAAAAAAAAASwOAQAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-12-12T13:49:44.072Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ssl_local.h",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_local.h",
+              "RelativeDocumentMoniker": "..\\ssl\\ssl_local.h",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_local.h",
+              "RelativeToolTip": "..\\ssl\\ssl_local.h",
+              "ViewState": "AgIAAF8AAAAAAAAAAAAEwGQAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-12-10T14:21:49.95Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ssl_ciph.c",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_ciph.c",
+              "RelativeDocumentMoniker": "..\\ssl\\ssl_ciph.c",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\ssl_ciph.c",
+              "RelativeToolTip": "..\\ssl\\ssl_ciph.c",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcCAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-12-10T14:07:13.137Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "t1_lib.c",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\t1_lib.c",
+              "RelativeDocumentMoniker": "..\\ssl\\t1_lib.c",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\ssl\\t1_lib.c",
+              "RelativeToolTip": "..\\ssl\\t1_lib.c",
+              "ViewState": "AgIAAGABAAAAAAAAAAAiwGUBAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-12-10T15:34:58.203Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

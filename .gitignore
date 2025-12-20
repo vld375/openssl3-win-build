@@ -9,7 +9,7 @@
 *.exe
 *.so
 *~
-/.vs/**
+.vs/
 /build-*/*/ARM/Debug
 /build-*/*/ARM/Release
 /build-*/*/ARM64/Debug

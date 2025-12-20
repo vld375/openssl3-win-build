@@ -1,7 +1,11 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\build-VS2022\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C92E1E46-3C94-4DD6-8E7D-E23ECED32A8C}|libcrypto-3\\libcrypto-3.vcxproj|D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\ec\\ecdh_ossl.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +13,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -21,7 +25,20 @@
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ecdh_ossl.c",
+              "DocumentMoniker": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\ec\\ecdh_ossl.c",
+              "RelativeDocumentMoniker": "..\\crypto\\ec\\ecdh_ossl.c",
+              "ToolTip": "D:\\prj\\LWOCRYPT_PROV\\openssl3-win-build\\crypto\\ec\\ecdh_ossl.c",
+              "RelativeToolTip": "..\\crypto\\ec\\ecdh_ossl.c",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-12-20T14:30:42.352Z",
+              "EditorCaption": ""
             }
           ]
         }

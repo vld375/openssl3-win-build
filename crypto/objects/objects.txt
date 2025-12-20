@@ -2050,3 +2050,49 @@ tcg-tr-category 37 : tcg-tr-cat-PublicKey 								: Public Key Trait Category
 nistKems 1 : id-alg-ml-kem-512  : ML-KEM-512
 nistKems 2 : id-alg-ml-kem-768  : ML-KEM-768
 nistKems 3 : id-alg-ml-kem-1024 : ML-KEM-1024
+
+###############################################################################
+# LWOCRYPTPRO add for static NIDs Belarusian cryptographic algorithms (STB 34.*)
+###############################################################################
+# ---------------------------------------------------------------------------
+# BIGN public key and curves (STB 34.101.45)
+# ---------------------------------------------------------------------------	
+!Alias bign 1 2 112 0 2 0 34 101 45
+bign 2 1			: bign-pubkey	: BIGN Public Key
+bign 3 1			: bign-curve256v1	: BIGN Curve 256v1
+bign 3 2			: bign-curve384v1	: BIGN Curve 384v1
+bign 3 3			: bign-curve512v1	: BIGN Curve 512v1
+
+# BIGN signature algorithm
+bign 12			: bign-with-hbelt	 : BIGN with HBELT
+# ---------------------------------------------------------------------------
+# BELT hash and MAC (STB 34.101.31)
+# ---------------------------------------------------------------------------
+!Alias belt 1 2 112 0 2 0 34 101 31
+# BELT hash (HBELT)
+belt 81				: belt-hash		: BELT Hash (HBELT)
+# BELT MAC (belt-mac256)
+belt 53				: belt-mac256		: BELT MAC 256-bit
+# ---------------------------------------------------------------------------
+# BELT symmetric ciphers
+# ---------------------------------------------------------------------------
+belt 23				: belt-cbc256		: BELT CBC 256-bi
+belt 33				: belt-cfb256		: BELT CFB 256-bit
+belt 43				: belt-ctr256		: BELT CTR 256-bit
+# ---------------------------------------------------------------------------
+# BASH hash algorithms (STB 34.101.77)
+# ---------------------------------------------------------------------------
+!Alias bash 1 2 112 0 2 0 34 101 77
+bash 11				: bash256		: BASH-256
+bash 12				: bash384		: BASH-384
+bash 13				: bash512		: BASH-512
+# ---------------------------------------------------------------------------
+# BASH PRG AEAD (optional, if used in TLS)
+# ---------------------------------------------------------------------------
+bash 31				: bash-prg-ae1281	: BASH PRG AEAD 128-1
+bash 32				: bash-prg-ae1282	: BASH PRG AEAD 128-2
+bash 33				: bash-prg-ae1921	: BASH PRG AEAD 192-1
+bash 34				: bash-prg-ae1922	: BASH PRG AEAD 192-2
+bash 35				: bash-prg-ae2561	: BASH PRG AEAD 256-1
+bash 36				: bash-prg-ae2562	: BASH PRG AEAD 256-2
+

@@ -1484,3 +1484,29 @@ SLH_DSA_SHAKE_192s_WITH_SHAKE256		1483
 SLH_DSA_SHAKE_192f_WITH_SHAKE256		1484
 SLH_DSA_SHAKE_256s_WITH_SHAKE256		1485
 SLH_DSA_SHAKE_256f_WITH_SHAKE256		1486
+
+# ---------------------------------------------------------------------------
+# Belarusian cryptographic algorithms (STB 34.*)
+# ---------------------------------------------------------------------------
+bign-pubkey		1501
+bign-curve256v1		1502
+bign-curve384v1		1503
+bign-curve512v1		1504
+bign-with-hbelt		1505
+
+belt-hash		1506
+belt-mac256		1507
+belt-cbc256		1508
+belt-cfb256		1509
+belt-ctr256		1510
+
+bash256			1511
+bash384			1512
+bash512			1513
+
+bash-prg-ae1281		1514
+bash-prg-ae1282		1515
+bash-prg-ae1921		1516
+bash-prg-ae1922		1517
+bash-prg-ae2561		1518
+bash-prg-ae2562		1519

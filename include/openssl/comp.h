@@ -6,9 +6,6 @@
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
  */
-/*
- * Generated from comp.h.in for https://github.com/kiyolee/openssl3-win-build.git.
- */
 
 
 

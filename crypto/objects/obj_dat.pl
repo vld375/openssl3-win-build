@@ -9,150 +9,140 @@
 use integer;
 use strict;
 use warnings;
-use FindBin;
-use lib "$FindBin::Bin/../../util/perl";
-use OpenSSL::copyright;
+
+# --- ВРЕМЕННОЕ РЕШЕНИЕ: задаём год вручную ---
+my $YEAR = 2025;
 
 # Generate the DER encoding for the given OID.
-sub der_it
-{
-    # Prologue
+sub der_it {
     my ($v) = @_;
     my @a = split(/\s+/, $v);
+    die "OID must have at least 2 arcs" unless @a >= 2;
     my $ret = pack("C*", $a[0] * 40 + $a[1]);
     shift @a;
     shift @a;
 
-    # Loop over rest of bytes; or in 0x80 for multi-byte numbers.
-    my $t;
     foreach (@a) {
         my @r = ();
-        $t = 0;
-        while ($_ >= 128) {
-            my $x = $_ % 128;
-            $_ /= 128;
-            push(@r, ($t++ ? 0x80 : 0) | $x);
+        my $x = $_;
+        while ($x >= 128) {
+            push @r, ($x & 0x7f) | 0x80;
+            $x >>= 7;
         }
-        push(@r, ($t++ ? 0x80 : 0) | $_);
+        push @r, $x;
         $ret .= pack("C*", reverse(@r));
     }
     return $ret;
 }
 
-# The year the output file is generated.
-my $YEAR = OpenSSL::copyright::latest(($0, $ARGV[0]));
-
-# Read input, parse all #define's into OID name and value.
-# Populate %ln and %sn with long and short names (%dupln and %dupsn)
-# are used to watch for duplicates.  Also %nid and %obj get the
-# NID and OBJ entries.
+# Read input, parse all #define's
 my %ln;
 my %sn;
 my %dupln;
 my %dupsn;
-my %nid;
-my %obj;
-my %objd;
-open(IN, "$ARGV[0]") || die "Can't open input file $ARGV[0], $!";
-while (<IN>) {
+my %nid;   # nid{NID_value} = name
+my %obj;   # obj{name} = "OBJ_name"
+my %objd;  # objd{"OBJ_name"} = "value"
+
+open(my $in, "<", $ARGV[0]) || die "Can't open input file $ARGV[0]: $!";
+while (<$in>) {
     next unless /^\#define\s+(\S+)\s+(.*)$/;
-    my $v = $1;
-    my $d = $2;
-    $d =~ s/^\"//;
-    $d =~ s/\"$//;
-    if ($v =~ /^SN_(.*)$/) {
-        if (defined $dupsn{$d}) {
-            print "WARNING: Duplicate short name \"$d\"\n";
-        } else {
-            $dupsn{$d} = 1;
+    my $macro = $1;
+    my $value = $2;
+    $value =~ s/^\"//;
+    $value =~ s/\"$//;
+
+    if ($macro =~ /^SN_(.*)$/) {
+        my $name = $1;
+        if (exists $dupsn{$value}) {
+            warn "WARNING: Duplicate short name \"$value\"\n";
         }
-        $sn{$1} = $d;
+        $dupsn{$value} = 1;
+        $sn{$name} = $value;
     }
-    elsif ($v =~ /^LN_(.*)$/) {
-        if (defined $dupln{$d}) {
-            print "WARNING: Duplicate long name \"$d\"\n";
-        } else {
-            $dupln{$d} = 1;
+    elsif ($macro =~ /^LN_(.*)$/) {
+        my $name = $1;
+        if (exists $dupln{$value}) {
+            warn "WARNING: Duplicate long name \"$value\"\n";
         }
-        $ln{$1} = $d;
+        $dupln{$value} = 1;
+        $ln{$name} = $value;
     }
-    elsif ($v =~ /^NID_(.*)$/) {
-        $nid{$d} = $1;
+    elsif ($macro =~ /^NID_(.*)$/) {
+        my $name = $1;
+        $nid{$value} = $name;  # $value = NID number (e.g. "1501")
     }
-    elsif ($v =~ /^OBJ_(.*)$/) {
-        $obj{$1} = $v;
-        $objd{$v} = $d;
+    elsif ($macro =~ /^OBJ_(.*)$/) {
+        my $name = $1;
+        $obj{$name} = $macro;
+        $objd{$macro} = $value;
     }
 }
-close IN;
+close $in;
 
-# For every value in %obj, recursively expand OBJ_xxx values.  That is:
-#     #define OBJ_iso 1L
-#     #define OBJ_identified_organization OBJ_iso,3L
-# Modify %objd values in-place.  Create an %objn array that has
+# Expand OBJ_xxx recursively
 my $changed;
 do {
     $changed = 0;
-    foreach my $k (keys %objd) {
-        $changed = 1 if $objd{$k} =~ s/(OBJ_[^,]+),/$objd{$1},/;
+    for my $k (keys %objd) {
+        if ($objd{$k} =~ s/(OBJ_[^,\s]+),/$objd{$1},/) {
+            $changed = 1;
+        }
     }
 } while ($changed);
 
-my @a = sort { $a <=> $b } keys %nid;
-my $n = $a[$#a] + 1;
-my @lvalues = ();
-my $lvalues = 0;
+# Find max NID to size arrays
+my @nid_nums = sort { $a <=> $b } grep { $_ =~ /^\d+$/ } keys %nid;
+my $max_nid = @nid_nums ? $nid_nums[-1] : 0;
+my $n = $max_nid + 1;
 
-# Scan all defined objects, building up the @out array.
-# %obj_der holds the DER encoding as an array of bytes, and %obj_len
-# holds the length in bytes.
+my @lvalues = ();
+my $lvalues_total = 0;
+
 my @out;
 my %obj_der;
 my %obj_len;
-for (my $i = 0; $i < $n; $i++) {
-    if (!defined $nid{$i}) {
-        push(@out, "    { NULL, NULL, NID_undef },\n");
+
+for my $i (0 .. $n - 1) {
+    if (!exists $nid{$i}) {
+        push @out, "    { NULL, NULL, NID_undef },\n";
         next;
     }
 
-    my $sn = defined $sn{$nid{$i}} ? "$sn{$nid{$i}}" : "NULL";
-    my $ln = defined $ln{$nid{$i}} ? "$ln{$nid{$i}}" : "NULL";
-    if ($sn eq "NULL") {
-        $sn = $ln;
-        $sn{$nid{$i}} = $ln;
-    }
-    if ($ln eq "NULL") {
-        $ln = $sn;
-        $ln{$nid{$i}} = $sn;
-    }
+    my $name = $nid{$i};
+    my $sn_val = exists $sn{$name} ? $sn{$name} : "NULL";
+    my $ln_val = exists $ln{$name} ? $ln{$name} : "NULL";
 
-    my $out = "    {\"$sn\", \"$ln\", NID_$nid{$i}";
-    if (defined $obj{$nid{$i}} && $objd{$obj{$nid{$i}}} =~ /,/) {
-        my $v = $objd{$obj{$nid{$i}}};
-        $v =~ s/L//g;
-        $v =~ s/,/ /g;
-        my $r = &der_it($v);
-        my $z = "";
-        my $length = 0;
-        # Format using fixed-width because we use strcmp later.
-        foreach (unpack("C*",$r)) {
-            $z .= sprintf("0x%02X,", $_);
-            $length++;
+    if ($sn_val eq "NULL") { $sn_val = $ln_val; }
+    if ($ln_val eq "NULL") { $ln_val = $sn_val; }
+
+    my $line = "    {\"$sn_val\", \"$ln_val\", NID_$name";
+    if (exists $obj{$name}) {
+        my $obj_macro = $obj{$name};
+        my $oid_str = $objd{$obj_macro};
+        if ($oid_str =~ /,/) {
+            # Expand OID string: "OBJ_bign,2L,1L" → "1 2 112 ... 2 1"
+            $oid_str =~ s/L//g;
+            $oid_str =~ s/,/ /g;
+            my $der = der_it($oid_str);
+            my @bytes = unpack("C*", $der);
+            my $hex = join(", ", map { sprintf("0x%02X", $_) } @bytes);
+            my $len = @bytes;
+
+            $obj_der{$obj_macro} = $hex;
+            $obj_len{$obj_macro} = $len;
+
+            push @lvalues, sprintf("    %-45s /* [%5d] %s */\n",
+                $hex . ",", $lvalues_total, $obj_macro);
+            $line .= ", $len, so + $lvalues_total";
+            $lvalues_total += $len;
         }
-        $obj_der{$obj{$nid{$i}}} = $z;
-        $obj_len{$obj{$nid{$i}}} = $length;
-
-        push(@lvalues,
-            sprintf("    %-45s  /* [%5d] %s */\n",
-                $z, $lvalues, $obj{$nid{$i}}));
-        $out .= ", $length, &so[$lvalues]";
-        $lvalues += $length;
     }
-    $out .= "},\n";
-    push(@out, $out);
+    $line .= "},\n";
+    push @out, $line;
 }
 
-# Finally ready to generate the output.
+# Output
 print <<"EOF";
 /*
  * WARNING: do not edit!
@@ -168,62 +158,46 @@ print <<"EOF";
 EOF
 
 print "/* Serialized OID's */\n";
-printf "static const unsigned char so[%d] = {\n", $lvalues + 1;
+printf "static const unsigned char so[%d] = {\n", $lvalues_total;
 print @lvalues;
 print "};\n\n";
 
 printf "#define NUM_NID %d\n", $n;
-printf "static const ASN1_OBJECT nid_objs[NUM_NID] = {\n";
+print "static const ASN1_OBJECT nid_objs[NUM_NID] = {\n";
 print @out;
-print  "};\n\n";
+print "};\n\n";
 
-{
-    no warnings "uninitialized";
-    @a = grep(defined $sn{$nid{$_}}, 0 .. $n);
+# SN table
+my @sn_indices = grep { exists $sn{$nid{$_}} } 0 .. $n - 1;
+printf "#define NUM_SN %d\n", scalar(@sn_indices);
+print "static const unsigned int sn_objs[NUM_SN] = {\n";
+for my $i (sort { $sn{$nid{$a}} cmp $sn{$nid{$b}} } @sn_indices) {
+    printf "    %4d,    /* \"%s\" */\n", $i, $sn{$nid{$i}};
 }
-printf "#define NUM_SN %d\n", $#a + 1;
-printf "static const unsigned int sn_objs[NUM_SN] = {\n";
-foreach (sort { $sn{$nid{$a}} cmp $sn{$nid{$b}} } @a) {
-    printf "    %4d,    /* \"$sn{$nid{$_}}\" */\n", $_;
-}
-print  "};\n\n";
+print "};\n\n";
 
-{
-    no warnings "uninitialized";
-    @a = grep(defined $ln{$nid{$_}}, 0 .. $n);
+# LN table
+my @ln_indices = grep { exists $ln{$nid{$_}} } 0 .. $n - 1;
+printf "#define NUM_LN %d\n", scalar(@ln_indices);
+print "static const unsigned int ln_objs[NUM_LN] = {\n";
+for my $i (sort { $ln{$nid{$a}} cmp $ln{$nid{$b}} } @ln_indices) {
+    printf "    %4d,    /* \"%s\" */\n", $i, $ln{$nid{$i}};
 }
-printf "#define NUM_LN %d\n", $#a + 1;
-printf "static const unsigned int ln_objs[NUM_LN] = {\n";
-foreach (sort { $ln{$nid{$a}} cmp $ln{$nid{$b}} } @a) {
-    printf "    %4d,    /* \"$ln{$nid{$_}}\" */\n", $_;
-}
-print  "};\n\n";
+print "};\n\n";
 
-{
-    no warnings "uninitialized";
-    @a = grep(defined $obj{$nid{$_}}, 0 .. $n);
+# OBJ table
+my @obj_indices = grep { exists $obj{$nid{$_}} } 0 .. $n - 1;
+printf "#define NUM_OBJ %d\n", scalar(@obj_indices);
+print "static const unsigned int obj_objs[NUM_OBJ] = {\n";
+for my $i (sort { 
+    my $a_len = $obj_len{$obj{$nid{$a}}};
+    my $b_len = $obj_len{$obj{$nid{$b}}};
+    ($a_len <=> $b_len) || ($obj_der{$obj{$nid{$a}}} cmp $obj_der{$obj{$nid{$b}}})
+} @obj_indices) {
+    my $macro = $obj{$nid{$i}};
+    my $oid_raw = $objd{$macro};
+    $oid_raw =~ s/L//g;
+    $oid_raw =~ s/,/ /g;
+    printf "    %4d,    /* %-32s %s */\n", $i, $macro, $oid_raw;
 }
-printf "#define NUM_OBJ %d\n", $#a + 1;
-printf "static const unsigned int obj_objs[NUM_OBJ] = {\n";
-
-# Compare DER; prefer shorter; if some length, use the "smaller" encoding.
-sub obj_cmp
-{
-    no warnings "uninitialized";
-    my $A = $obj_len{$obj{$nid{$a}}};
-    my $B = $obj_len{$obj{$nid{$b}}};
-    my $r = $A - $B;
-    return $r if $r != 0;
-
-    $A = $obj_der{$obj{$nid{$a}}};
-    $B = $obj_der{$obj{$nid{$b}}};
-    return $A cmp $B;
-}
-foreach (sort obj_cmp @a) {
-    my $m = $obj{$nid{$_}};
-    my $v = $objd{$m};
-    $v =~ s/L//g;
-    $v =~ s/,/ /g;
-    printf "    %4d,    /* %-32s %s */\n", $_, $m, $v;
-}
-print  "};\n";
+print "};\n";

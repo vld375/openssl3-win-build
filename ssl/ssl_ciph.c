@@ -275,22 +275,24 @@ static const SSL_CIPHER cipher_aliases[] = {
 
      //lwocrypt ====================================================
      // // В cipher_aliases[]:
-    { 0,
-  TLS1_3_TXT_BASH_PRG_AE2561_BASH256,        /* name */
-  TLS1_3_RFC_BASH_PRG_AE2561_BASH256,        /* stdname */
-  0,                                         /* id = 0 для alias */
-  SSL_kBDHE,                                 /* algorithm_mkey: BDHE key exchange */
-  SSL_aBIGN,                                 /* algorithm_auth: BIGN authentication */
-  0,                                         /* algorithm_enc: 0 для AEAD в TLS 1.3 */
-  0,                                         /* algorithm_mac: 0 для AEAD в TLS 1.3 */
-  TLS1_3_VERSION,                            /* min_tls: TLS 1.3 */
-  TLS1_3_VERSION,                            /* max_tls: TLS 1.3 */
-  0,                                         /* min_dtls: 0 (не поддерживается в DTLS) */
-  0,                                         /* max_dtls: 0 */
-  SSL_HIGH,                                  /* algo_strength: уровень безопасности */
-  SSL_HANDSHAKE_MAC_BASH256 | SSL_QUIC,  /* algorithm2: hash algo + QUIC flag */
-  256,                                       /* strength_bits: 256 бит */
-  256 },                                      /* alg_bits: 256 бит */
+   {
+1,
+TLS1_3_TXT_BASH_PRG_AE2561_BASH256,
+TLS1_3_RFC_BASH_PRG_AE2561_BASH256,
+TLS1_3_CK_BASH_PRG_AE2561_BASH256,
+SSL_kANY,
+SSL_aANY,
+SSL_eNULL,
+SSL_AEAD,
+TLS1_3_VERSION,
+TLS1_3_VERSION,
+0,
+0,
+SSL_HIGH,
+SSL_HANDSHAKE_MAC_BASH256 | SSL_QUIC,
+256,
+256
+   },
     // =====================================================================
 };
 

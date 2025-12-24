@@ -161,6 +161,8 @@
 # define SSL_ARIA256GCM          0x00200000U
 # define SSL_MAGMA               0x00400000U
 # define SSL_KUZNYECHIK          0x00800000U
+// lwocrypt
+// ==============================
 
 # define SSL_AESGCM              (SSL_AES128GCM | SSL_AES256GCM)
 # define SSL_AESCCM              (SSL_AES128CCM | SSL_AES256CCM | SSL_AES128CCM8 | SSL_AES256CCM8)

@@ -148,6 +148,24 @@ static SSL_CIPHER tls13_ciphers[] = {
         384,
     },
 #endif
+    //  lwocrypt ===================================================================
+        {
+1,
+TLS1_3_TXT_BASH_PRG_AE2561_BASH256,
+TLS1_3_RFC_BASH_PRG_AE2561_BASH256,
+TLS1_3_CK_BASH_PRG_AE2561_BASH256,
+SSL_kANY,
+SSL_aANY,
+SSL_eNULL,
+SSL_AEAD,
+TLS1_3_VERSION, TLS1_3_VERSION,
+0, 0,
+SSL_HIGH,
+SSL_HANDSHAKE_MAC_BASH256 | SSL_QUIC,
+256,
+256,
+        },
+   // =========================================================================
 };
 
 /*

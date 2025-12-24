@@ -224,6 +224,7 @@ extern "C" {
 # define TLSEXT_curve_P_256                              23
 # define TLSEXT_curve_P_384                              24
 
+
 /* OpenSSL value to disable maximum fragment length extension */
 # define TLSEXT_max_fragment_length_DISABLED    0
 /* Allowed values for max fragment length extension */
@@ -850,6 +851,23 @@ int SSL_CTX_set_tlsext_ticket_key_evp_cb
 # define TLS1_RFC_DHE_PSK_WITH_ARIA_256_GCM_SHA384       "TLS_DHE_PSK_WITH_ARIA_256_GCM_SHA384"
 # define TLS1_RFC_RSA_PSK_WITH_ARIA_128_GCM_SHA256       "TLS_RSA_PSK_WITH_ARIA_128_GCM_SHA256"
 # define TLS1_RFC_RSA_PSK_WITH_ARIA_256_GCM_SHA384       "TLS_RSA_PSK_WITH_ARIA_256_GCM_SHA384"
+
+
+/* Belarusian national ciphersuites (STB 34.101.45 / STB 34.101.31) */
+# define TLS1_CK_DHE_BIGN_WITH_BELT_CTR_MAC_HBELT 0x0300FF15
+# define TLS1_TXT_DHE_BIGN_WITH_BELT_CTR_MAC_HBELT  "DHE_BIGN_WITH_BELT_CTR_MAC_HBELT"
+# define TLS1_RFC_DHE_BIGN_WITH_BELT_CTR_MAC_HBELT  "TLS_DHE_BIGN_WITH_BELT_CTR_MAC_HBELT"
+
+// 860 lwocrypt ==================================================================================
+/* Belarusian BIGN SignatureScheme values (STB 34.101.90) */
+# define TLSEXT_sigalg_bign_with_hbelt      0xFE01
+# define TLSEXT_sigalg_bign_with_bash384    0xFE02
+# define TLSEXT_sigalg_bign_with_bash512    0xFE03
+/* Belarusian national ciphersuites (STB 34.101.90) — TLS 1.3 */
+# define TLS1_3_CK_BASH_PRG_AE2561_BASH256     0x0300FF1E
+# define TLS1_3_TXT_BASH_PRG_AE2561_BASH256     "BASH_PRG_AE2561_BASH256"
+# define TLS1_3_RFC_BASH_PRG_AE2561_BASH256     "TLS_BASH_PRG_AE2561_BASH256"
+// ==========================================================================================
 
 
 /*

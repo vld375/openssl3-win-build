@@ -6587,102 +6587,112 @@
 #define OBJ_bign                1L,2L,112L,0L,2L,0L,34L,101L,45L
 
 #define SN_bign_pubkey          "bign-pubkey"
-#define LN_bign_pubkey          "BIGN Public Key"
+#define LN_bign_pubkey          "bign-pubkey"
 #define NID_bign_pubkey         3560
 #define OBJ_bign_pubkey         OBJ_bign,2L,1L
 
 #define SN_bign_curve256v1              "bign-curve256v1"
-#define LN_bign_curve256v1              "BIGN Curve 256v1"
+#define LN_bign_curve256v1              "bign-curve256v1"
 #define NID_bign_curve256v1             3561
 #define OBJ_bign_curve256v1             OBJ_bign,3L,1L
 
 #define SN_bign_curve384v1              "bign-curve384v1"
-#define LN_bign_curve384v1              "BIGN Curve 384v1"
+#define LN_bign_curve384v1              "bign-curve384v1"
 #define NID_bign_curve384v1             3562
 #define OBJ_bign_curve384v1             OBJ_bign,3L,2L
 
 #define SN_bign_curve512v1              "bign-curve512v1"
-#define LN_bign_curve512v1              "BIGN Curve 512v1"
+#define LN_bign_curve512v1              "bign-curve512v1"
 #define NID_bign_curve512v1             3563
 #define OBJ_bign_curve512v1             OBJ_bign,3L,3L
 
 #define SN_bign_with_hbelt              "bign-with-hbelt"
-#define LN_bign_with_hbelt              "BIGN with HBELT"
+#define LN_bign_with_hbelt              "bign-with-hbelt"
 #define NID_bign_with_hbelt             3564
 #define OBJ_bign_with_hbelt             OBJ_bign,12L
+
+#define SN_bign_with_bash384            "bign-with-bash384"
+#define LN_bign_with_bash384            "bign-with-bash384"
+#define NID_bign_with_bash384           3565
+#define OBJ_bign_with_bash384           OBJ_bign,14L
+
+#define SN_bign_with_bash512            "bign-with-bash512"
+#define LN_bign_with_bash512            "bign-with-bash512"
+#define NID_bign_with_bash512           3566
+#define OBJ_bign_with_bash512           OBJ_bign,15L
 
 #define OBJ_belt                1L,2L,112L,0L,2L,0L,34L,101L,31L
 
 #define SN_belt_hash            "belt-hash"
 #define LN_belt_hash            "BELT Hash (HBELT)"
-#define NID_belt_hash           3565
+#define NID_belt_hash           3567
 #define OBJ_belt_hash           OBJ_belt,81L
 
 #define SN_belt_mac256          "belt-mac256"
 #define LN_belt_mac256          "BELT MAC 256-bit"
-#define NID_belt_mac256         3566
+#define NID_belt_mac256         3568
 #define OBJ_belt_mac256         OBJ_belt,53L
 
 #define SN_belt_cbc256          "belt-cbc256"
 #define LN_belt_cbc256          "BELT CBC 256-bi"
-#define NID_belt_cbc256         3567
+#define NID_belt_cbc256         3569
 #define OBJ_belt_cbc256         OBJ_belt,23L
 
 #define SN_belt_cfb256          "belt-cfb256"
 #define LN_belt_cfb256          "BELT CFB 256-bit"
-#define NID_belt_cfb256         3568
+#define NID_belt_cfb256         3570
 #define OBJ_belt_cfb256         OBJ_belt,33L
 
 #define SN_belt_ctr256          "belt-ctr256"
 #define LN_belt_ctr256          "BELT CTR 256-bit"
-#define NID_belt_ctr256         3569
+#define NID_belt_ctr256         3571
 #define OBJ_belt_ctr256         OBJ_belt,43L
 
 #define OBJ_bash                1L,2L,112L,0L,2L,0L,34L,101L,77L
 
-#define SN_BASH_256             "bash256"
-#define LN_BASH_256             "BASH-256"
-#define NID_BASH_256            3570
-#define OBJ_BASH_256            OBJ_bash,11L
+#define SN_bash256              "bash256"
+#define LN_bash256              "bash256"
+#define NID_bash256             2148
+#define OBJ_bash256             OBJ_bash,11L
 
-#define SN_BASH_384             "bash384"
-#define LN_BASH_384             "BASH-384"
-#define NID_BASH_384            3571
-#define OBJ_BASH_384            OBJ_bash,12L
+#define SN_bash384              "bash384"
+#define LN_bash384              "bash384"
+#define NID_bash384             2149
+#define OBJ_bash384             OBJ_bash,12L
 
-#define SN_BASH_512             "bash512"
-#define LN_BASH_512             "BASH-512"
-#define NID_BASH_512            3572
-#define OBJ_BASH_512            OBJ_bash,13L
+#define SN_bash512              "bash512"
+#define LN_bash512              "bash512"
+#define NID_bash512             2150
+#define OBJ_bash512             OBJ_bash,13L
 
 #define SN_bash_prg_ae1281              "bash-prg-ae1281"
 #define LN_bash_prg_ae1281              "BASH PRG AEAD 128-1"
-#define NID_bash_prg_ae1281             3573
+#define NID_bash_prg_ae1281             3572
 #define OBJ_bash_prg_ae1281             OBJ_bash,31L
 
 #define SN_bash_prg_ae1282              "bash-prg-ae1282"
 #define LN_bash_prg_ae1282              "BASH PRG AEAD 128-2"
-#define NID_bash_prg_ae1282             3574
+#define NID_bash_prg_ae1282             3573
 #define OBJ_bash_prg_ae1282             OBJ_bash,32L
 
 #define SN_bash_prg_ae1921              "bash-prg-ae1921"
 #define LN_bash_prg_ae1921              "BASH PRG AEAD 192-1"
-#define NID_bash_prg_ae1921             3575
+#define NID_bash_prg_ae1921             3574
 #define OBJ_bash_prg_ae1921             OBJ_bash,33L
 
 #define SN_bash_prg_ae1922              "bash-prg-ae1922"
 #define LN_bash_prg_ae1922              "BASH PRG AEAD 192-2"
-#define NID_bash_prg_ae1922             3576
+#define NID_bash_prg_ae1922             3575
 #define OBJ_bash_prg_ae1922             OBJ_bash,34L
 
 #define SN_bash_prg_ae2561              "bash-prg-ae2561"
 #define LN_bash_prg_ae2561              "BASH PRG AEAD 256-1"
-#define NID_bash_prg_ae2561             3577
+#define NID_bash_prg_ae2561             3576
 #define OBJ_bash_prg_ae2561             OBJ_bash,35L
 
 #define SN_bash_prg_ae2562              "bash-prg-ae2562"
 #define LN_bash_prg_ae2562              "BASH PRG AEAD 256-2"
-#define NID_bash_prg_ae2562             3578
+#define NID_bash_prg_ae2562             3577
 #define OBJ_bash_prg_ae2562             OBJ_bash,36L
 
 #endif /* OPENSSL_OBJ_MAC_H */

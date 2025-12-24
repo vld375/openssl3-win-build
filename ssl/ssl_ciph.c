@@ -273,7 +273,52 @@ static const SSL_CIPHER cipher_aliases[] = {
     {0, SSL3_TXT_EDH_RSA_DES_192_CBC3_SHA, NULL, 0,
      SSL_kDHE, SSL_aRSA, SSL_3DES, SSL_SHA1, 0, 0, 0, 0, SSL_HIGH | SSL_FIPS},
 
+     //lwocrypt ====================================================
+     // // В cipher_aliases[]:
+    { 0,
+  TLS1_3_TXT_BASH_PRG_AE2561_BASH256,        /* name */
+  TLS1_3_RFC_BASH_PRG_AE2561_BASH256,        /* stdname */
+  0,                                         /* id = 0 для alias */
+  SSL_kBDHE,                                 /* algorithm_mkey: BDHE key exchange */
+  SSL_aBIGN,                                 /* algorithm_auth: BIGN authentication */
+  0,                                         /* algorithm_enc: 0 для AEAD в TLS 1.3 */
+  0,                                         /* algorithm_mac: 0 для AEAD в TLS 1.3 */
+  TLS1_3_VERSION,                            /* min_tls: TLS 1.3 */
+  TLS1_3_VERSION,                            /* max_tls: TLS 1.3 */
+  0,                                         /* min_dtls: 0 (не поддерживается в DTLS) */
+  0,                                         /* max_dtls: 0 */
+  SSL_HIGH,                                  /* algo_strength: уровень безопасности */
+  SSL_HANDSHAKE_MAC_BASH256 | SSL_QUIC,  /* algorithm2: hash algo + QUIC flag */
+  256,                                       /* strength_bits: 256 бит */
+  256 },                                      /* alg_bits: 256 бит */
+    // =====================================================================
 };
+
+uint32_t valid;
+const char* name;           /* text name */
+const char* stdname;        /* RFC name */
+uint32_t id;                /* id, 4 bytes, first is version */
+/*
+ * changed in 1.0.0: these four used to be portions of a single value
+ * 'algorithms'
+ */
+uint32_t algorithm_mkey;    /* key exchange algorithm */
+uint32_t algorithm_auth;    /* server authentication */
+uint32_t algorithm_enc;     /* symmetric encryption */
+uint32_t algorithm_mac;     /* symmetric authentication */
+int min_tls;                /* minimum SSL/TLS protocol version */
+int max_tls;                /* maximum SSL/TLS protocol version */
+int min_dtls;               /* minimum DTLS protocol version */
+int max_dtls;               /* maximum DTLS protocol version */
+uint32_t algo_strength;     /* strength and export flags */
+uint32_t algorithm2;        /* Extra flags */
+int32_t strength_bits;      /* Number of bits really used */
+uint32_t alg_bits;          /* Number of bits for algorithm */
+
+
+
+
+
 
 /*
  * Search for public key algorithm with given name and return its pkey_id if

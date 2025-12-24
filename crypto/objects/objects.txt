@@ -2058,13 +2058,15 @@ nistKems 3 : id-alg-ml-kem-1024 : ML-KEM-1024
 # BIGN public key and curves (STB 34.101.45)
 # ---------------------------------------------------------------------------	
 !Alias bign 1 2 112 0 2 0 34 101 45
-bign 2 1			: bign-pubkey	: BIGN Public Key
-bign 3 1			: bign-curve256v1	: BIGN Curve 256v1
-bign 3 2			: bign-curve384v1	: BIGN Curve 384v1
-bign 3 3			: bign-curve512v1	: BIGN Curve 512v1
+bign 2 1			: bign-pubkey		: bign-pubkey
+bign 3 1			: bign-curve256v1	: bign-curve256v1
+bign 3 2			: bign-curve384v1	: bign-curve384v1
+bign 3 3			: bign-curve512v1	: bign-curve512v1
 
-# BIGN signature algorithm
-bign 12			: bign-with-hbelt	 : BIGN with HBELT
+# BIGN signature algorithm (STB 34.101.45)
+bign 12				: bign-with-hbelt	: bign-with-hbelt
+bign 14				: bign-with-bash384 	: bign-with-bash384
+bign 15				: bign-with-bash512 	: bign-with-bash512
 # ---------------------------------------------------------------------------
 # BELT hash and MAC (STB 34.101.31)
 # ---------------------------------------------------------------------------
@@ -2083,9 +2085,9 @@ belt 43				: belt-ctr256		: BELT CTR 256-bit
 # BASH hash algorithms (STB 34.101.77)
 # ---------------------------------------------------------------------------
 !Alias bash 1 2 112 0 2 0 34 101 77
-bash 11				: bash256		: BASH-256
-bash 12				: bash384		: BASH-384
-bash 13				: bash512		: BASH-512
+bash 11				: bash256		: bash256
+bash 12				: bash384		: bash384
+bash 13				: bash512		: bash512
 # ---------------------------------------------------------------------------
 # BASH PRG AEAD (optional, if used in TLS)
 # ---------------------------------------------------------------------------
@@ -2095,4 +2097,3 @@ bash 33				: bash-prg-ae1921	: BASH PRG AEAD 192-1
 bash 34				: bash-prg-ae1922	: BASH PRG AEAD 192-2
 bash 35				: bash-prg-ae2561	: BASH PRG AEAD 256-1
 bash 36				: bash-prg-ae2562	: BASH PRG AEAD 256-2
-

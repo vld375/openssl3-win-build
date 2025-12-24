@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -2143,6 +2143,47 @@ static const SIGALG_LOOKUP sigalg_lookup_tbl[] = {
      NID_undef, NID_undef, 1, 0,
      TLS1_2_VERSION, TLS1_2_VERSION, DTLS1_2_VERSION, DTLS1_2_VERSION},
 #endif
+// 2146 lwocrypt =========================================================
+#ifndef OPENSSL_NO_LWOCRYPT
+{ "bign_with_hbelt",
+  NULL,
+  TLSEXT_sigalg_bign_with_hbelt,
+  NID_belt_hash,
+  SSL_MD_HBELT_IDX, //должен быть определён в ssl_local.h
+  NID_bign_pubkey,
+  SSL_PKEY_BIGN,
+  NID_bign_with_hbelt,
+  NID_bign_curve256v1,
+  1, 0,
+  TLS1_3_VERSION, 0, -1, -1
+},
+{ "bign_with_bash384",
+  NULL,
+  TLSEXT_sigalg_bign_with_bash384,
+  NID_bash384,
+  SSL_MD_BASH384_IDX, // определить в ssl_local.h
+  NID_bign_pubkey,
+  SSL_PKEY_BIGN,
+  NID_bign_with_bash384,
+  NID_bign_curve384v1,
+  1, 0,
+  TLS1_3_VERSION, 0, -1, -1
+},
+{ "bign_with_bash512",
+  NULL,
+  TLSEXT_sigalg_bign_with_bash512,
+  NID_bash512,
+  SSL_MD_BASH512_IDX, // определить в ssl_local.h
+  NID_bign_pubkey,
+  SSL_PKEY_BIGN,
+  NID_bign_with_bash512,
+  NID_bign_curve512v1,
+  1, 0,
+  TLS1_3_VERSION, 0, -1, -1
+},
+#endif
+// ===================================================================
+
 };
 /* Legacy sigalgs for TLS < 1.2 RSA TLS signatures */
 static const SIGALG_LOOKUP legacy_rsa_sigalg = {

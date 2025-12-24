@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2002, Oracle and/or its affiliates. All rights reserved
  * Copyright 2005 Nokia. All rights reserved.
@@ -98,6 +98,14 @@
 
 /* all PSK */
 
+/* lwocryptpro ===============================================================================*/
+// 100
+#define SSL_kBDHE       0x00000400U  // Key exchange (в SSL_MKEY_MASK)
+#define SSL_aBIGN       0x00100000U  // Auth (в SSL_AUTH_MASK)
+#define SSL_BELTCTR     0x01000000U  /* ДОБАВЛЕНО: BELT-CTR алгоритм */
+#define SSL_mHBELT      0x10000000U
+//===============================================================================================
+
 # define SSL_PSK     (SSL_kPSK | SSL_kRSAPSK | SSL_kECDHEPSK | SSL_kDHEPSK)
 
 /* Any appropriate key exchange algorithm (for TLS 1.3 ciphersuites) */
@@ -123,8 +131,10 @@
 /* Any appropriate signature auth (for TLS 1.3 ciphersuites) */
 # define SSL_aANY                0x00000000U
 /* All bits requiring a certificate */
+// 134 lwocrypt add SSL_aBIGN
 #define SSL_aCERT \
-    (SSL_aRSA | SSL_aDSS | SSL_aECDSA | SSL_aGOST01 | SSL_aGOST12)
+    (SSL_aRSA | SSL_aDSS | SSL_aECDSA | SSL_aGOST01 | SSL_aGOST12 | SSL_aBIGN)
+// ===================================================================
 
 /* Bits for algorithm_enc (symmetric encryption) */
 # define SSL_DES                 0x00000001U
@@ -198,7 +208,13 @@
 # define SSL_MD_SHA512_IDX 11
 # define SSL_MD_MAGMAOMAC_IDX 12
 # define SSL_MD_KUZNYECHIKOMAC_IDX 13
-# define SSL_MAX_DIGEST 14
+// 212 lwocrypt ===========================================================
+# define SSL_MD_HBELT_IDX 14              /* belt-hash (HBELT) */
+# define SSL_MD_BASH256_IDX 15            /* bash256 */
+# define SSL_MD_BASH384_IDX 16            /* bash384 */
+# define SSL_MD_BASH512_IDX 17            /* bash512 */
+# define SSL_MAX_DIGEST 18                /* обновлено: было 14 → теперь 18 */
+//==========================================================================
 
 #define SSL_MD_NUM_IDX  SSL_MAX_DIGEST
 
@@ -212,6 +228,11 @@
 # define SSL_HANDSHAKE_MAC_GOST94 SSL_MD_GOST94_IDX
 # define SSL_HANDSHAKE_MAC_GOST12_256 SSL_MD_GOST12_256_IDX
 # define SSL_HANDSHAKE_MAC_GOST12_512 SSL_MD_GOST12_512_IDX
+// 232 lwocrypt ===========================================================
+#define SSL_HANDSHAKE_MAC_BASH256 SSL_MD_BASH256_IDX
+#define SSL_HANDSHAKE_MAC_BASH384 SSL_MD_BASH384_IDX  
+#define SSL_HANDSHAKE_MAC_BASH512 SSL_MD_BASH512_IDX
+//==========================================================================
 # define SSL_HANDSHAKE_MAC_DEFAULT  SSL_HANDSHAKE_MAC_MD5_SHA1
 
 /* Bits 8-15 bits are PRF */
@@ -223,6 +244,9 @@
 # define TLS1_PRF_GOST12_256 (SSL_MD_GOST12_256_IDX << TLS1_PRF_DGST_SHIFT)
 # define TLS1_PRF_GOST12_512 (SSL_MD_GOST12_512_IDX << TLS1_PRF_DGST_SHIFT)
 # define TLS1_PRF            (SSL_MD_MD5_SHA1_IDX << TLS1_PRF_DGST_SHIFT)
+// 245 lwocrypt ===========================================================
+#define TLS1_PRF_BASH256 (SSL_MD_BASH256_IDX << TLS1_PRF_DGST_SHIFT)
+// =========================================================================
 
 /*
  * Stream MAC for GOST ciphersuites from cryptopro draft (currently this also
@@ -326,8 +350,10 @@
 # define SSL_PKEY_GOST12_512     6
 # define SSL_PKEY_ED25519        7
 # define SSL_PKEY_ED448          8
-# define SSL_PKEY_NUM            9
-
+// 346 lwocrypt ==========================================================================
+#define SSL_PKEY_BIGN            9  	  /* ДОБАВЛЕНО lwocrypt : Тип EVP_PKEY для BIGN */
+# define SSL_PKEY_NUM            10
+//========================================================================================
 # define SSL_ENC_DES_IDX         0
 # define SSL_ENC_3DES_IDX        1
 # define SSL_ENC_RC4_IDX         2
